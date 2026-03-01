@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Site Magic</title>
+    <link rel="stylesheet" href="popup.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Site Magic</h1>
+        <p>Personalize your browsing experience</p>
+      </header>
+
+      <section class="rules-section">
+        <div class="rules-header">
+          <span class="rules-title">Style Rules</span>
+          <button id="add-rule-btn" class="add-rule-btn">+ New Rule</button>
+        </div>
+        <div id="rules-list" class="rules-list">
+          <!-- Rules will be injected here -->
+        </div>
+      </section>
+
+      <section class="picker-section">
+        <div class="picker-header">
+          <span class="picker-title">Selected Element</span>
+          <span id="picking-status" class="picking-status"></span>
+          <button id="clear-target-btn" class="clear-target-btn">
+            Clear Target
+          </button>
+        </div>
+        <div class="selector-container">
+          <textarea
+            id="target-input"
+            class="target-input"
+            placeholder="Global (All Elements)"
+            rows="3"
+          ></textarea>
+          <button id="copy-selector-btn" class="copy-btn" title="Copy Selector">
+            📋
+          </button>
+        </div>
+        <button id="picker-btn" class="picker-btn">
+          <span>✨</span> Pick Element to Style
+        </button>
+      </section>
+
+      <section class="controls">
+        <div class="control-group" id="group-font-family">
+          <div class="control-header">
+            <label for="font-family">Font Family</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="enable-font-family" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="control-content">
+            <select id="font-family">
+              <option value="inherit">Default</option>
+              <option value="'Inter', sans-serif">Inter</option>
+              <option value="'Roboto', sans-serif">Roboto</option>
+              <option value="'Georgia', serif">Georgia</option>
+              <option value="'Courier New', monospace">Courier New</option>
+              <option value="'Open Sans', sans-serif">Open Sans</option>
+              <option value="'Montserrat', sans-serif">Montserrat</option>
+              <option value="'Raleway', sans-serif">Raleway</option>
+              <option value="'Nunito', sans-serif">Nunito</option>
+              <option value="'Cascadia Mono', monospace">Cascadia Mono</option>
+              <option value="'Playfair Display', serif">
+                Playfair Display
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="control-group" id="group-font-size">
+          <div class="control-header">
+            <label for="font-size">Font Size (px)</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="enable-font-size" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="control-content">
+            <div class="slider-container">
+              <input type="range" id="font-size" min="12" max="32" value="16" />
+              <span id="font-size-val">16px</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-group" id="group-text-color">
+          <div class="control-header">
+            <label for="text-color">Text Color</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="enable-text-color" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="control-content">
+            <div class="color-picker-container">
+              <input type="color" id="text-color" value="#333333" />
+              <span id="text-color-val">#333333</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <div class="button-row">
+          <button id="reset-btn" class="secondary-btn">Reset</button>
+          <button id="apply-btn" class="primary-btn">Save Changes</button>
+        </div>
+      </footer>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>

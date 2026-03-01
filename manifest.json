@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "SiteMagic",
+  "version": "1.0",
+  "description": "Make any website magical. Change colors, fonts, and more.",
+  "permissions": ["storage", "activeTab", "scripting", "tabs", "sidePanel"],
+  "action": {},
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
