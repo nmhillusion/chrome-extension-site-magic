@@ -1,5 +1,18 @@
+interface StyleRule {
+  id: string;
+  name: string;
+  targetSelector: string;
+  fontFamily: string;
+  fontSize: string;
+  textColor: string;
+  isFontFamilyEnabled: boolean;
+  isFontSizeEnabled: boolean;
+  isTextColorEnabled: boolean;
+  isActive: boolean;
+}
+
 (function () {
-  const FONT_MAP = {
+  const FONT_MAP: Record<string, string | null> = {
     Inter: "Inter:wght@400;500;600;700",
     Roboto: "Roboto:wght@400;500;700",
     "Open Sans": "Open+Sans:wght@400;600;700",
@@ -12,8 +25,8 @@
     "Cascadia Mono": null, // System font
   };
 
-  const loadFonts = (rules) => {
-    const fontsToLoad = new Set();
+  const loadFonts = (rules: StyleRule[]) => {
+    const fontsToLoad = new Set<string>();
     rules.forEach((rule) => {
       if (
         rule.isActive &&
@@ -23,12 +36,14 @@
         // Extract font name from possible CSS quotes, e.g. "'Inter', sans-serif" -> "Inter"
         const match = rule.fontFamily.match(/'?([^',]+)'?/);
         if (match && FONT_MAP[match[1]]) {
-          fontsToLoad.add(FONT_MAP[match[1]]);
+          fontsToLoad.add(FONT_MAP[match[1]] as string);
         }
       }
     });
 
-    let fontLink = document.getElementById("site-magic-fonts");
+    let fontLink = document.getElementById(
+      "site-magic-fonts",
+    ) as HTMLLinkElement | null;
 
     if (fontsToLoad.size === 0) {
       if (fontLink) fontLink.remove();
@@ -50,8 +65,8 @@
     }
   };
 
-  const applyStyles = (settings) => {
-    const rules = settings.rules || [];
+  const applyStyles = (settings: any) => {
+    const rules: StyleRule[] = settings.rules || [];
 
     // Load needed web fonts
     loadFonts(rules);
@@ -62,7 +77,9 @@
 
     if (rules.length === 0) {
       // Handle legacy single-rule settings for migration/fallback
-      const legacyRule = {
+      const legacyRule: StyleRule = {
+        id: "legacy",
+        name: "Legacy Rule",
         targetSelector: settings.targetSelector,
         fontFamily: settings.fontFamily,
         fontSize: settings.fontSize,
@@ -92,7 +109,7 @@
     rules.forEach((rule) => {
       if (!rule.isActive) return;
 
-      let selectors = [];
+      let selectors: string[] = [];
       if (rule.targetSelector) {
         selectors = [rule.targetSelector, `${rule.targetSelector} *`];
       } else {
@@ -159,11 +176,11 @@
 
   // Picker Logic
   let isPicking = false;
-  let hoveredElement = null;
+  let hoveredElement: HTMLElement | null = null;
 
-  const getSelector = (el) => {
-    const path = [];
-    let current = el;
+  const getSelector = (el: HTMLElement): string => {
+    const path: string[] = [];
+    let current: HTMLElement | null = el;
 
     // Stop if the element itself is body or html
     if (current === document.body || current === document.documentElement)
@@ -190,16 +207,16 @@
 
         // Add nth-of-type if not unique among same-tagged/classed siblings
         if (current.parentNode) {
-          const siblings = Array.from(current.parentNode.children).filter(
-            (child) => child.tagName === current.tagName,
-          );
+          const siblings = Array.from(
+            (current.parentNode as HTMLElement).children,
+          ).filter((child) => child.tagName === current!.tagName);
           const sameSelectorSiblings = Array.from(
-            current.parentNode.children,
+            (current.parentNode as HTMLElement).children,
           ).filter((child) => {
-            if (child.tagName !== current.tagName) return false;
-            if (current.classList.length > 0) {
-              return Array.from(current.classList).every((c) =>
-                child.classList.contains(c),
+            if (child.tagName !== current!.tagName) return false;
+            if (current!.classList.length > 0) {
+              return Array.from(current!.classList).every((c) =>
+                (child as HTMLElement).classList.contains(c),
               );
             }
             return true;
@@ -213,13 +230,13 @@
       }
 
       path.unshift(selector);
-      current = current.parentNode;
+      current = current.parentNode as HTMLElement | null;
     }
 
     return path.join(" > ");
   };
 
-  const handleMouseOver = (e) => {
+  const handleMouseOver = (e: MouseEvent) => {
     if (!isPicking) return;
     e.stopPropagation();
 
@@ -228,17 +245,19 @@
       hoveredElement.style.backgroundColor = "";
     }
 
-    hoveredElement = e.target;
-    hoveredElement.style.outline = "3px solid #008b8b";
-    hoveredElement.style.backgroundColor = "rgba(0, 139, 139, 0.2)";
+    hoveredElement = e.target as HTMLElement;
+    if (hoveredElement) {
+      hoveredElement.style.outline = "3px solid #008b8b";
+      hoveredElement.style.backgroundColor = "rgba(0, 139, 139, 0.2)";
+    }
   };
 
-  const handleClick = (e) => {
+  const handleClick = (e: MouseEvent) => {
     if (!isPicking) return;
     e.preventDefault();
     e.stopPropagation();
 
-    const selector = getSelector(e.target);
+    const selector = getSelector(e.target as HTMLElement);
     stopPicking();
     chrome.runtime.sendMessage({ action: "pickingComplete", selector });
   };
@@ -271,13 +290,13 @@
   getSettings();
 
   // Listen for changes
-  chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace === "sync") {
+  chrome.storage.onChanged.addListener((_changes, _namespace) => {
+    if (_namespace === "sync") {
       getSettings();
     }
   });
 
-  // Reinforce styles on DOM updates (optional but helpful for SPAs)
+  // Reinforce styles on DOM updates
   const observer = new MutationObserver(() => {
     const style = document.getElementById("site-magic-styles");
     if (style && style.parentElement !== document.documentElement) {

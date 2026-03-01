@@ -6,18 +6,18 @@
   "permissions": ["storage", "activeTab", "scripting", "tabs", "sidePanel"],
   "action": {},
   "background": {
-    "service_worker": "background.js"
-  },
-  "side_panel": {
-    "default_path": "popup.html"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "run_at": "document_start"
+      "js": ["content.js"]
     }
   ],
+  "side_panel": {
+    "default_path": "popup.html"
+  },
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

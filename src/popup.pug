@@ -1,0 +1,80 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Site Magic
+    link(href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet")
+  body
+    .container
+      header
+        h1 Site Magic
+        p Personalize your browsing experience
+
+      section.rules-section
+        .rules-header
+          span.rules-title Style Rules
+          button#add-rule-btn.add-rule-btn + New Rule
+        #rules-list.rules-list
+          // Rules will be injected here
+
+      section.picker-section
+        .picker-header
+          span.picker-title Selected Element
+          span#picking-status.picking-status
+          button#clear-target-btn.clear-target-btn Clear Target
+        .selector-container
+          textarea#target-input.target-input(placeholder="Global (All Elements)" rows="3")
+          button#copy-selector-btn.copy-btn(title="Copy Selector") 📋
+        button#picker-btn.picker-btn
+          span ✨
+          |  Pick Element to Style
+
+      section.controls
+        .control-group#group-font-family
+          .control-header
+            label(for="font-family") Font Family
+            label.toggle-switch
+              input#enable-font-family(type="checkbox" checked)
+              span.slider
+          .control-content
+            select#font-family
+              option(value="inherit") Default
+              option(value="'Inter', sans-serif") Inter
+              option(value="'Roboto', sans-serif") Roboto
+              option(value="'Georgia', serif") Georgia
+              option(value="'Courier New', monospace") Courier New
+              option(value="'Open Sans', sans-serif") Open Sans
+              option(value="'Montserrat', sans-serif") Montserrat
+              option(value="'Raleway', sans-serif") Raleway
+              option(value="'Nunito', sans-serif") Nunito
+              option(value="'Cascadia Mono', monospace") Cascadia Mono
+              option(value="'Playfair Display', serif") Playfair Display
+
+        .control-group#group-font-size
+          .control-header
+            label(for="font-size") Font Size (px)
+            label.toggle-switch
+              input#enable-font-size(type="checkbox" checked)
+              span.slider
+          .control-content
+            .slider-container
+              input#font-size(type="range" min="12" max="32" value="16")
+              span#font-size-val 16px
+
+        .control-group#group-text-color
+          .control-header
+            label(for="text-color") Text Color
+            label.toggle-switch
+              input#enable-text-color(type="checkbox" checked)
+              span.slider
+          .control-content
+            .color-picker-container
+              input#text-color(type="color" value="#333333")
+              span#text-color-val #333333
+
+      footer
+        .button-row
+          button#reset-btn.secondary-btn Reset
+          button#apply-btn.primary-btn Save Changes
+    script(type="module" src="/src/popup.ts")

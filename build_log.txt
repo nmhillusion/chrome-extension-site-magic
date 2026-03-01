@@ -1,0 +1,23 @@
+
+> site-magical@1.0.0 build
+> tsc && vite build
+
+[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m✓[39m 1 modules transformed.
+[31m✗[39m Build failed in 31ms
+[31merror during build:
+[31msrc/popup.pug (1:8): Expected ';', '}' or <eof> (Note that you need plugins to import files that are not JavaScript)[31m
+file: [36mN:/projects/chrome-extensions/site-magical/src/popup.pug:1:8[31m
+[33m
+1: doctype html
+           ^
+2: html(lang="en")
+3:   head
+[31m
+    at getRollupError (file:///N:/projects/chrome-extensions/site-magical/node_modules/rollup/dist/es/shared/parseAst.js:402:41)
+    at ParseError.initialise (file:///N:/projects/chrome-extensions/site-magical/node_modules/rollup/dist/es/shared/node-entry.js:14465:28)
+    at convertNode (file:///N:/projects/chrome-extensions/site-magical/node_modules/rollup/dist/es/shared/node-entry.js:16437:10)
+    at convertProgram (file:///N:/projects/chrome-extensions/site-magical/node_modules/rollup/dist/es/shared/node-entry.js:15677:12)
+    at Module.setSource (file:///N:/projects/chrome-extensions/site-magical/node_modules/rollup/dist/es/shared/node-entry.js:17392:24)
+    at async ModuleLoader.addModuleSource (file:///N:/projects/chrome-extensions/site-magical/node_modules/rollup/dist/es/shared/node-entry.js:21497:13)[39m

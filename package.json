@@ -1,0 +1,31 @@
+{
+  "name": "site-magical",
+  "version": "1.0.0",
+  "description": "",
+  "main": "background.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "pug src/popup.pug -o src/ && tsc && vite build && mv dist/src/popup.html dist/popup.html && rmdir dist\\src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nmhillusion/chrome-extension-site-magic.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nmhillusion/chrome-extension-site-magic/issues"
+  },
+  "homepage": "https://github.com/nmhillusion/chrome-extension-site-magic#readme",
+  "devDependencies": {
+    "@types/chrome": "^0.1.37",
+    "@types/node": "^25.3.3",
+    "pug": "^3.0.3",
+    "pug-cli": "^1.0.0-alpha6",
+    "sass": "^1.97.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  }
+}
