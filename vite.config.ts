@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import { resolve, basename, extname } from "path";
+import { resolve, basename, extname, relative } from "path";
 import { readdirSync } from "fs";
 
 // Helper to find all HTML files in src directory
@@ -15,7 +15,8 @@ const getHtmlEntries = () => {
         if (file.isDirectory()) {
           scan(fullPath);
         } else if (extname(file.name) === ".html") {
-          const name = basename(file.name, ".html");
+          const relativePath = relative(srcDir, fullPath);
+          const name = relativePath.replace(/\.html$/, "").replace(/\\/g, "/");
           entries[name] = fullPath;
         }
       });
@@ -43,7 +44,7 @@ export default defineConfig({
         assetFileNames: (assetInfo) => {
           const name = assetInfo.names?.[0] ?? assetInfo.name ?? "";
           if (name.endsWith(".css")) {
-            return "[name].[ext]";
+            return "popup/[name].[ext]";
           }
           return "assets/[name]-[hash].[ext]";
         },

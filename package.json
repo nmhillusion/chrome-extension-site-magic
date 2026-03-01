@@ -1,11 +1,11 @@
 {
-  "name": "site-magical",
+  "name": "site-magic",
   "version": "1.0.0",
   "description": "",
   "main": "background.js",
   "scripts": {
     "dev": "vite",
-    "build": "pug src/ -o src/ --silent && tsc && vite build && move dist\\src\\popup\\*.html dist\\ && rmdir /s /q dist\\src"
+    "build": "pug src/ -o src/ --silent && tsc && vite build && xcopy /E /Y /I dist\\src\\* dist\\ && rmdir /s /q dist\\src && del /s /q src\\*.html"
   },
   "repository": {
     "type": "git",
