@@ -5,7 +5,7 @@
   "main": "background.js",
   "scripts": {
     "dev": "vite",
-    "build": "pug src/ -o src/ && tsc && vite build && move dist\\src\\*.html dist\\ && rmdir /s /q dist\\src"
+    "build": "pug src/ -o src/ --silent && tsc && vite build && move dist\\src\\popup\\*.html dist\\ && rmdir /s /q dist\\src"
   },
   "repository": {
     "type": "git",

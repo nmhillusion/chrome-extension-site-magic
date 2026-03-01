@@ -4,21 +4,27 @@ import { readdirSync } from "fs";
 
 // Helper to find all HTML files in src directory
 const getHtmlEntries = () => {
-  const pagesDir = resolve(__dirname, "src");
+  const srcDir = resolve(__dirname, "src");
   const entries: Record<string, string> = {};
 
-  try {
-    const files = readdirSync(pagesDir);
-    files.forEach((file) => {
-      if (extname(file) === ".html") {
-        const name = basename(file, ".html");
-        entries[name] = resolve(pagesDir, file);
-      }
-    });
-  } catch (err) {
-    console.error("Could not read src directory", err);
-  }
+  const scan = (dir: string) => {
+    try {
+      const files = readdirSync(dir, { withFileTypes: true });
+      files.forEach((file) => {
+        const fullPath = resolve(dir, file.name);
+        if (file.isDirectory()) {
+          scan(fullPath);
+        } else if (extname(file.name) === ".html") {
+          const name = basename(file.name, ".html");
+          entries[name] = fullPath;
+        }
+      });
+    } catch (err) {
+      console.error(`Could not read directory ${dir}`, err);
+    }
+  };
 
+  scan(srcDir);
   return entries;
 };
 
