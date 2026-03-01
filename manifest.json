@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "SiteMagic",
   "version": "1.0",
-  "description": "Make any website magical. Change colors, fonts, and more.",
+  "description": "Magically transform any website by customizing its colors, fonts, and overall appearance.",
   "permissions": ["storage", "activeTab", "scripting", "tabs", "sidePanel"],
   "action": {},
   "background": {
