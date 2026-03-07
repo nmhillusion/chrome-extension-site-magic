@@ -59,6 +59,12 @@ const build = async () => {
   const publicDir = path.resolve(import.meta.dirname, "public");
   const distDir = path.resolve(import.meta.dirname, "dist");
 
+  // Clean dist folder
+  if (fs.existsSync(distDir)) {
+    console.log("Cleaning dist folder...");
+    fs.rmSync(distDir, { recursive: true });
+  }
+
   if (fs.existsSync(publicDir)) {
     console.log("Copying public folder to dist...");
     if (!fs.existsSync(distDir)) {
