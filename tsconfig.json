@@ -17,8 +17,8 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "types": ["chrome", "node"]
+    "noImplicitReturns": true
+    // "types": ["chrome", "node"]
   },
   "include": ["src/**/*.ts"]
 }

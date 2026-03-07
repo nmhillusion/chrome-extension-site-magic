@@ -4,8 +4,8 @@
   "description": "",
   "main": "background.js",
   "scripts": {
-    "dev": "vite",
-    "build": "pug src/ -o src/ --silent && tsc && vite build && xcopy /E /Y /I dist\\src\\* dist\\ && rmdir /s /q dist\\src && del /s /q src\\*.html"
+    "dev": "node build.js --watch",
+    "build": "node build.js"
   },
   "repository": {
     "type": "git",
@@ -20,12 +20,9 @@
   },
   "homepage": "https://github.com/nmhillusion/chrome-extension-site-magic#readme",
   "devDependencies": {
-    "@types/chrome": "^0.1.37",
-    "@types/node": "^25.3.3",
+    "@nmhillusion/n2ngin-bull-engine": "^2024.3.4",
     "pug": "^3.0.3",
-    "pug-cli": "^1.0.0-alpha6",
     "sass": "^1.97.3",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "typescript": "^5.9.3"
   }
 }
