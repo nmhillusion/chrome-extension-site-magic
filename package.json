@@ -4,8 +4,8 @@
   "description": "",
   "main": "background.js",
   "scripts": {
-    "dev": "node build.js --watch",
-    "build": "node build.js"
+    "dev": "node --experimental-strip-types build.mts --watch",
+    "build": "node --experimental-strip-types build.mts"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,8 @@
   "homepage": "https://github.com/nmhillusion/chrome-extension-site-magic#readme",
   "devDependencies": {
     "@nmhillusion/n2ngin-bull-engine": "^2024.3.4",
+    "@types/chrome": "^0.1.37",
+    "@types/node": "^25.3.5",
     "pug": "^3.0.3",
     "sass": "^1.97.3",
     "typescript": "^5.9.3"

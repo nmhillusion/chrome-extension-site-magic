@@ -1,15 +1,17 @@
-const { BullEngine } = require("@nmhillusion/n2ngin-bull-engine");
-const path = require("path");
-const fs = require("fs");
+import pkg from "@nmhillusion/n2ngin-bull-engine";
+import type { RenderConfig } from "@nmhillusion/n2ngin-bull-engine";
+const { BullEngine } = pkg;
+import * as path from "path";
+import * as fs from "fs";
 
 const isWatch = process.argv.includes("--watch");
 
 const build = async () => {
   const engine = new BullEngine();
 
-  const renderConfig = {
-    rootDir: path.resolve(__dirname, "src"),
-    outDir: path.resolve(__dirname, "dist"),
+  const renderConfig: RenderConfig = {
+    rootDir: path.resolve(import.meta.dirname, "src"),
+    outDir: path.resolve(import.meta.dirname, "dist"),
     watch: {
       enabled: isWatch,
     },
@@ -54,9 +56,8 @@ const build = async () => {
 
   console.log("Starting build with BullEngine...");
 
-  // Copy public folder to dist
-  const publicDir = path.resolve(__dirname, "public");
-  const distDir = path.resolve(__dirname, "dist");
+  const publicDir = path.resolve(import.meta.dirname, "public");
+  const distDir = path.resolve(import.meta.dirname, "dist");
 
   if (fs.existsSync(publicDir)) {
     console.log("Copying public folder to dist...");
