@@ -293,6 +293,50 @@ span {
   min-width: 45px;
 }
 
+.text-styles-group {
+  display: flex;
+  gap: 8px;
+}
+
+.style-btn {
+  flex: 0 0 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: var(--primary-color);
+  }
+
+  &.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 139, 139, 0.4);
+  }
+
+  &#toggle-bold {
+    font-weight: 700;
+  }
+  &#toggle-italic {
+    font-style: italic;
+  }
+  &#toggle-underline {
+    text-decoration: underline;
+  }
+}
+
 footer {
   display: flex;
   flex-direction: column;

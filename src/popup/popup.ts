@@ -7,11 +7,19 @@ interface StyleRule {
   textColor: string;
   bgColor: string;
   padding: string;
+  borderRadius: string;
+  fontWeight: string;
+  fontStyle: string;
+  textDecoration: string;
   isFontFamilyEnabled: boolean;
   isFontSizeEnabled: boolean;
   isTextColorEnabled: boolean;
   isBgColorEnabled: boolean;
   isPaddingEnabled: boolean;
+  isBorderRadiusEnabled: boolean;
+  isFontWeightEnabled: boolean;
+  isFontStyleEnabled: boolean;
+  isTextDecorationEnabled: boolean;
   isActive: boolean;
 }
 
@@ -48,6 +56,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const enablePadding = document.getElementById(
     "enable-padding",
   ) as HTMLInputElement;
+
+  const borderRadiusInput = document.getElementById(
+    "border-radius",
+  ) as HTMLInputElement;
+  const borderRadiusVal = document.getElementById(
+    "border-radius-val",
+  ) as HTMLElement;
+  const enableBorderRadius = document.getElementById(
+    "enable-border-radius",
+  ) as HTMLInputElement;
+
+  const toggleBold = document.getElementById(
+    "toggle-bold",
+  ) as HTMLButtonElement;
+  const toggleItalic = document.getElementById(
+    "toggle-italic",
+  ) as HTMLButtonElement;
+  const toggleUnderline = document.getElementById(
+    "toggle-underline",
+  ) as HTMLButtonElement;
 
   const pickerBtn = document.getElementById("picker-btn") as HTMLButtonElement;
   const clearTargetBtn = document.getElementById(
@@ -165,6 +193,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (enablePadding) enablePadding.checked = rule.isPaddingEnabled !== false;
 
+    if (borderRadiusInput) borderRadiusInput.value = rule.borderRadius || "0";
+    if (borderRadiusVal)
+      borderRadiusVal.textContent = `${rule.borderRadius || "0"}%`;
+    if (enableBorderRadius)
+      enableBorderRadius.checked = rule.isBorderRadiusEnabled !== false;
+
+    if (toggleBold)
+      toggleBold.classList.toggle("active", rule.fontWeight === "bold");
+    if (toggleItalic)
+      toggleItalic.classList.toggle("active", rule.fontStyle === "italic");
+    if (toggleUnderline)
+      toggleUnderline.classList.toggle(
+        "active",
+        rule.textDecoration === "underline",
+      );
+
+    if (enableBorderRadius)
+      updateGroupState(enableBorderRadius, "group-border-radius");
+
     if (targetInput) {
       targetInput.value = rule.targetSelector || "";
       if (!rule.targetSelector) {
@@ -212,11 +259,19 @@ document.addEventListener("DOMContentLoaded", () => {
       textColor: "#333333",
       bgColor: "#ffffff",
       padding: "0",
+      borderRadius: "0",
+      fontWeight: "normal",
+      fontStyle: "normal",
+      textDecoration: "none",
       isFontFamilyEnabled: true,
       isFontSizeEnabled: true,
       isTextColorEnabled: true,
       isBgColorEnabled: true,
       isPaddingEnabled: true,
+      isBorderRadiusEnabled: true,
+      isFontWeightEnabled: true,
+      isFontStyleEnabled: true,
+      isTextDecorationEnabled: true,
       isActive: true,
     };
     rules.push(newRule);
@@ -254,11 +309,19 @@ document.addEventListener("DOMContentLoaded", () => {
         textColor: result.textColor || "#333333",
         bgColor: result.bgColor || "#ffffff",
         padding: result.padding || "0",
+        borderRadius: result.borderRadius || "0",
+        fontWeight: result.fontWeight || "normal",
+        fontStyle: result.fontStyle || "normal",
+        textDecoration: result.textDecoration || "none",
         isFontFamilyEnabled: result.isFontFamilyEnabled !== false,
         isFontSizeEnabled: result.isFontSizeEnabled !== false,
         isTextColorEnabled: result.isTextColorEnabled !== false,
         isBgColorEnabled: result.isBgColorEnabled !== false,
         isPaddingEnabled: result.isPaddingEnabled !== false,
+        isBorderRadiusEnabled: result.isBorderRadiusEnabled !== false,
+        isFontWeightEnabled: result.isFontWeightEnabled !== false,
+        isFontStyleEnabled: result.isFontStyleEnabled !== false,
+        isTextDecorationEnabled: result.isTextDecorationEnabled !== false,
         isActive: true,
       };
       rules = [legacyRule];
@@ -280,25 +343,25 @@ document.addEventListener("DOMContentLoaded", () => {
     rule.textColor = textColorInput.value;
     rule.bgColor = bgColorInput.value;
     rule.padding = paddingInput.value;
+    rule.borderRadius = borderRadiusInput.value;
     rule.isFontFamilyEnabled = enableFontFamily.checked;
     rule.isFontSizeEnabled = enableFontSize.checked;
     rule.isTextColorEnabled = enableTextColor.checked;
     rule.isBgColorEnabled = enableBgColor.checked;
     rule.isPaddingEnabled = enablePadding.checked;
+    rule.isBorderRadiusEnabled = enableBorderRadius.checked;
     rule.targetSelector = targetInput.value;
     if (ruleNameInput) {
       rule.name = ruleNameInput.value;
-      renderRules();
     }
-
-    saveToStorage(true);
   };
 
   let debounceTimer: any;
   const debouncedSave = () => {
     clearTimeout(debounceTimer);
     updateActiveRuleState();
-    notifyTabs(); // Live preview
+    renderRules(); // Update list immediately
+    notifyTabs(); // Immediate live preview
     debounceTimer = setTimeout(() => {
       saveToStorage(true);
     }, 500);
@@ -315,9 +378,61 @@ document.addEventListener("DOMContentLoaded", () => {
     enableBgColor,
     paddingInput,
     enablePadding,
+    borderRadiusInput,
+    enableBorderRadius,
   ].forEach((el) => {
     if (el) el.addEventListener("change", debouncedSave);
   });
+
+  if (enableBorderRadius) {
+    enableBorderRadius.addEventListener("change", () =>
+      updateGroupState(enableBorderRadius, "group-border-radius"),
+    );
+  }
+
+  if (borderRadiusInput) {
+    borderRadiusInput.addEventListener("input", (e) => {
+      const val = (e.target as HTMLInputElement).value;
+      if (borderRadiusVal) borderRadiusVal.textContent = `${val}%`;
+      const rule = getActiveRule();
+      if (rule) {
+        rule.borderRadius = val;
+        notifyTabs(); // Live preview
+      }
+    });
+  }
+
+  const toggleStyle = (
+    btn: HTMLButtonElement,
+    prop: keyof StyleRule,
+    activeVal: string,
+    normalVal: string,
+  ) => {
+    const rule = getActiveRule();
+    if (!rule) return;
+
+    const currentVal = rule[prop] as string;
+    const newVal = currentVal === activeVal ? normalVal : activeVal;
+    (rule as any)[prop] = newVal;
+    btn.classList.toggle("active", newVal === activeVal);
+    debouncedSave();
+  };
+
+  if (toggleBold) {
+    toggleBold.addEventListener("click", () =>
+      toggleStyle(toggleBold, "fontWeight", "bold", "normal"),
+    );
+  }
+  if (toggleItalic) {
+    toggleItalic.addEventListener("click", () =>
+      toggleStyle(toggleItalic, "fontStyle", "italic", "normal"),
+    );
+  }
+  if (toggleUnderline) {
+    toggleUnderline.addEventListener("click", () =>
+      toggleStyle(toggleUnderline, "textDecoration", "underline", "none"),
+    );
+  }
 
   if (enableFontFamily) {
     enableFontFamily.addEventListener("change", () =>

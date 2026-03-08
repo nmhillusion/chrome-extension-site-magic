@@ -7,11 +7,19 @@ interface StyleRule {
   textColor: string;
   bgColor: string;
   padding: string;
+  borderRadius: string;
+  fontWeight: string;
+  fontStyle: string;
+  textDecoration: string;
   isFontFamilyEnabled: boolean;
   isFontSizeEnabled: boolean;
   isTextColorEnabled: boolean;
   isBgColorEnabled: boolean;
   isPaddingEnabled: boolean;
+  isBorderRadiusEnabled: boolean;
+  isFontWeightEnabled: boolean;
+  isFontStyleEnabled: boolean;
+  isTextDecorationEnabled: boolean;
   isActive: boolean;
 }
 
@@ -95,11 +103,19 @@ interface StyleRule {
         textColor: settings.textColor,
         bgColor: settings.bgColor,
         padding: settings.padding,
+        borderRadius: settings.borderRadius || "0",
+        fontWeight: settings.fontWeight || "normal",
+        fontStyle: settings.fontStyle || "normal",
+        textDecoration: settings.textDecoration || "none",
         isFontFamilyEnabled: settings.isFontFamilyEnabled !== false,
         isFontSizeEnabled: settings.isFontSizeEnabled !== false,
         isTextColorEnabled: settings.isTextColorEnabled !== false,
         isBgColorEnabled: settings.isBgColorEnabled !== false,
         isPaddingEnabled: settings.isPaddingEnabled !== false,
+        isBorderRadiusEnabled: settings.isBorderRadiusEnabled !== false,
+        isFontWeightEnabled: settings.isFontWeightEnabled !== false,
+        isFontStyleEnabled: settings.isFontStyleEnabled !== false,
+        isTextDecorationEnabled: settings.isTextDecorationEnabled !== false,
         isActive: true,
       };
       if (legacyRule.targetSelector || legacyRule.textColor) {
@@ -125,6 +141,9 @@ interface StyleRule {
       if (rule.isPaddingEnabled !== false && rule.padding) {
         containerCss += `padding: ${rule.padding}px !important;`;
       }
+      if (rule.isBorderRadiusEnabled !== false && rule.borderRadius) {
+        containerCss += `border-radius: ${rule.borderRadius}% !important;`;
+      }
 
       // Inherited properties (Applied to container as well)
       if (
@@ -139,6 +158,15 @@ interface StyleRule {
       }
       if (rule.isTextColorEnabled !== false && rule.textColor) {
         containerCss += `color: ${rule.textColor} !important;`;
+      }
+      if (rule.isFontWeightEnabled !== false && rule.fontWeight) {
+        containerCss += `font-weight: ${rule.fontWeight} !important;`;
+      }
+      if (rule.isFontStyleEnabled !== false && rule.fontStyle) {
+        containerCss += `font-style: ${rule.fontStyle} !important;`;
+      }
+      if (rule.isTextDecorationEnabled !== false && rule.textDecoration) {
+        containerCss += `text-decoration: ${rule.textDecoration} !important;`;
       }
       containerCss += "}\n";
       consolidatedCss += containerCss;
@@ -161,6 +189,15 @@ interface StyleRule {
       }
       if (rule.isTextColorEnabled !== false && rule.textColor) {
         childCss += `color: ${rule.textColor} !important;`;
+      }
+      if (rule.isFontWeightEnabled !== false && rule.fontWeight) {
+        childCss += `font-weight: ${rule.fontWeight} !important;`;
+      }
+      if (rule.isFontStyleEnabled !== false && rule.fontStyle) {
+        childCss += `font-style: ${rule.fontStyle} !important;`;
+      }
+      if (rule.isTextDecorationEnabled !== false && rule.textDecoration) {
+        childCss += `text-decoration: ${rule.textDecoration} !important;`;
       }
       childCss += "}\n";
       consolidatedCss += childCss;
@@ -314,18 +351,11 @@ interface StyleRule {
   // Load initial styles
   getSettings();
 
-  // Listen for changes
-  chrome.storage.onChanged.addListener((_changes, _namespace) => {
-    if (_namespace === "sync") {
-      getSettings();
-    }
-  });
-
   // Reinforce styles on DOM updates
   const observer = new MutationObserver(() => {
     const style = document.getElementById("site-magic-styles");
     if (style && style.parentElement !== document.documentElement) {
-      document.documentElement.appendChild(style);
+      (document.head || document.documentElement).appendChild(style);
     }
   });
 

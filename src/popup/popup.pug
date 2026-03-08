@@ -77,6 +77,15 @@ html(lang="en")
               input#text-color(type="color" value="#333333")
               span#text-color-val #333333
 
+        .control-group#group-text-styles
+          .control-header
+            label Text Styles
+          .control-content
+            .text-styles-group
+              button#toggle-bold.style-btn(title="Bold") B
+              button#toggle-italic.style-btn(title="Italic") I
+              button#toggle-underline.style-btn(title="Underline") U
+
         .control-group#group-bg-color
           .control-header
             label(for="bg-color") Background Color
@@ -98,6 +107,17 @@ html(lang="en")
             .slider-container
               input#padding(type="range" min="0" max="100" value="0")
               span#padding-val 0px
+
+        .control-group#group-border-radius
+          .control-header
+            label(for="border-radius") Border Radius (%)
+            label.toggle-switch
+              input#enable-border-radius(type="checkbox" checked)
+              span.slider
+          .control-content
+            .slider-container
+              input#border-radius(type="range" min="0" max="50" value="0")
+              span#border-radius-val 0%
 
       footer
         .button-row
