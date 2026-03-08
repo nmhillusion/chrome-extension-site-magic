@@ -4,7 +4,6 @@ html(lang="en")
     meta(charset="UTF-8")
     meta(name="viewport" content="width=device-width, initial-scale=1.0")
     title Site Magic
-    link(href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet")
     link(rel="stylesheet" href="popup.scss")
   body
     .container
@@ -32,6 +31,10 @@ html(lang="en")
           |  Pick Element to Style
 
       section.controls
+        .control-group#group-rule-name
+          label Rule Name
+          input#rule-name-input.rule-name-input(type="text" placeholder="Rule Name (e.g., My Custom Style)")
+
         .control-group#group-font-family
           .control-header
             label(for="font-family") Font Family

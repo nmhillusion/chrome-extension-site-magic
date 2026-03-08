@@ -111,52 +111,59 @@ interface StyleRule {
     rules.forEach((rule) => {
       if (!rule.isActive) return;
 
-      let selectors: string[] = [];
-      if (rule.targetSelector) {
-        selectors = [rule.targetSelector, `${rule.targetSelector} *`];
-      } else {
-        selectors = [
-          "html",
-          "body",
-          "p",
-          "span",
-          "div",
-          "h1",
-          "h2",
-          "h3",
-          "h4",
-          "h5",
-          "h6",
-          "a",
-          "li",
-          "td",
-          "th",
-        ];
+      const target = rule.targetSelector || "";
+      const isGlobal = !target;
+
+      // 1. Container Styles (Padding, Background, and Font/Color for the container itself)
+      const containerSelector = isGlobal ? "html, body" : target;
+      let containerCss = `${containerSelector} {`;
+
+      // Structural properties (Container only)
+      if (rule.isBgColorEnabled !== false && rule.bgColor) {
+        containerCss += `background-color: ${rule.bgColor} !important;`;
+      }
+      if (rule.isPaddingEnabled !== false && rule.padding) {
+        containerCss += `padding: ${rule.padding}px !important;`;
       }
 
-      const baseSelector = selectors.join(", ");
-      let css = `${baseSelector} {`;
+      // Inherited properties (Applied to container as well)
       if (
         rule.isFontFamilyEnabled !== false &&
         rule.fontFamily &&
         rule.fontFamily !== "inherit"
       ) {
-        css += `font-family: ${rule.fontFamily} !important;`;
+        containerCss += `font-family: ${rule.fontFamily} !important;`;
       }
       if (rule.isFontSizeEnabled !== false && rule.fontSize) {
-        css += `font-size: ${rule.fontSize}px !important;`;
+        containerCss += `font-size: ${rule.fontSize}px !important;`;
       }
       if (rule.isTextColorEnabled !== false && rule.textColor) {
-        css += `color: ${rule.textColor} !important;`;
+        containerCss += `color: ${rule.textColor} !important;`;
       }
-      if (rule.isBgColorEnabled !== false && rule.bgColor) {
-        css += `background-color: ${rule.bgColor} !important;`;
+      containerCss += "}\n";
+      consolidatedCss += containerCss;
+
+      // 2. Child Styles (Font, Color, etc. - Inherited stuff ONLY)
+      const childSelector = isGlobal
+        ? "p, span, div, h1, h2, h3, h4, h5, h6, a, li, td, th"
+        : `${target} *`;
+
+      let childCss = `${childSelector} {`;
+      if (
+        rule.isFontFamilyEnabled !== false &&
+        rule.fontFamily &&
+        rule.fontFamily !== "inherit"
+      ) {
+        childCss += `font-family: ${rule.fontFamily} !important;`;
       }
-      if (rule.isPaddingEnabled !== false && rule.padding) {
-        css += `padding: ${rule.padding}px !important;`;
+      if (rule.isFontSizeEnabled !== false && rule.fontSize) {
+        childCss += `font-size: ${rule.fontSize}px !important;`;
       }
-      css += "}";
-      consolidatedCss += css + "\n";
+      if (rule.isTextColorEnabled !== false && rule.textColor) {
+        childCss += `color: ${rule.textColor} !important;`;
+      }
+      childCss += "}\n";
+      consolidatedCss += childCss;
     });
 
     styleTag.textContent = consolidatedCss;

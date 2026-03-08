@@ -14,9 +14,16 @@ body {
   min-width: 280px;
   margin: 0;
   padding: 0;
-  font-family: "Inter", sans-serif;
+  font-family: Arial, sans-serif;
   background: var(--bg-gradient);
   color: var(--text-main);
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 .container {
@@ -229,6 +236,23 @@ select {
 
 select:focus {
   border-color: var(--primary-color);
+}
+
+.rule-name-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: white;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 139, 139, 0.1);
+  }
 }
 
 .slider-container,

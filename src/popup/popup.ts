@@ -62,6 +62,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const copySelectorBtn = document.getElementById(
     "copy-selector-btn",
   ) as HTMLButtonElement;
+  const ruleNameInput = document.getElementById(
+    "rule-name-input",
+  ) as HTMLInputElement;
 
   const rulesList = document.getElementById("rules-list") as HTMLElement;
   const addRuleBtn = document.getElementById(
@@ -141,6 +144,8 @@ document.addEventListener("DOMContentLoaded", () => {
       enableFontSize.checked = rule.isFontSizeEnabled !== false;
     if (enableTextColor)
       enableTextColor.checked = rule.isTextColorEnabled !== false;
+
+    if (ruleNameInput) ruleNameInput.value = rule.name || "";
 
     if (enableBgColor) enableBgColor.checked = rule.isBgColorEnabled !== false;
 
@@ -281,6 +286,10 @@ document.addEventListener("DOMContentLoaded", () => {
     rule.isBgColorEnabled = enableBgColor.checked;
     rule.isPaddingEnabled = enablePadding.checked;
     rule.targetSelector = targetInput.value;
+    if (ruleNameInput) {
+      rule.name = ruleNameInput.value;
+      renderRules();
+    }
 
     saveToStorage(true);
   };
@@ -382,6 +391,17 @@ document.addEventListener("DOMContentLoaded", () => {
         notifyTabs(); // Live preview
       }
     });
+  }
+
+  if (ruleNameInput) {
+    ruleNameInput.addEventListener("input", () => {
+      const rule = getActiveRule();
+      if (rule) {
+        rule.name = ruleNameInput.value;
+        renderRules(); // Update list immediately
+      }
+    });
+    ruleNameInput.addEventListener("change", debouncedSave);
   }
 
   if (targetInput) {
