@@ -74,6 +74,28 @@ html(lang="en")
               input#text-color(type="color" value="#333333")
               span#text-color-val #333333
 
+        .control-group#group-bg-color
+          .control-header
+            label(for="bg-color") Background Color
+            label.toggle-switch
+              input#enable-bg-color(type="checkbox" checked)
+              span.slider
+          .control-content
+            .color-picker-container
+              input#bg-color(type="color" value="#ffffff")
+              span#bg-color-val #FFFFFF
+
+        .control-group#group-padding
+          .control-header
+            label(for="padding") Padding (px)
+            label.toggle-switch
+              input#enable-padding(type="checkbox" checked)
+              span.slider
+          .control-content
+            .slider-container
+              input#padding(type="range" min="0" max="100" value="0")
+              span#padding-val 0px
+
       footer
         .button-row
           button#reset-btn.secondary-btn Reset

@@ -5,9 +5,13 @@ interface StyleRule {
   fontFamily: string;
   fontSize: string;
   textColor: string;
+  bgColor: string;
+  padding: string;
   isFontFamilyEnabled: boolean;
   isFontSizeEnabled: boolean;
   isTextColorEnabled: boolean;
+  isBgColorEnabled: boolean;
+  isPaddingEnabled: boolean;
   isActive: boolean;
 }
 
@@ -71,12 +75,17 @@ interface StyleRule {
     // Load needed web fonts
     loadFonts(rules);
 
-    // Remove existing style if any
-    const existingStyle = document.getElementById("site-magic-styles");
-    if (existingStyle) existingStyle.remove();
+    let styleTag = document.getElementById(
+      "site-magic-styles",
+    ) as HTMLStyleElement | null;
+    if (!styleTag) {
+      styleTag = document.createElement("style");
+      styleTag.id = "site-magic-styles";
+      (document.head || document.documentElement).appendChild(styleTag);
+    }
 
     if (rules.length === 0) {
-      // Handle legacy single-rule settings for migration/fallback
+      // Fallback migration logic
       const legacyRule: StyleRule = {
         id: "legacy",
         name: "Legacy Rule",
@@ -84,28 +93,21 @@ interface StyleRule {
         fontFamily: settings.fontFamily,
         fontSize: settings.fontSize,
         textColor: settings.textColor,
-        isFontFamilyEnabled: settings.isFontFamilyEnabled,
-        isFontSizeEnabled: settings.isFontSizeEnabled,
-        isTextColorEnabled: settings.isTextColorEnabled,
+        bgColor: settings.bgColor,
+        padding: settings.padding,
+        isFontFamilyEnabled: settings.isFontFamilyEnabled !== false,
+        isFontSizeEnabled: settings.isFontSizeEnabled !== false,
+        isTextColorEnabled: settings.isTextColorEnabled !== false,
+        isBgColorEnabled: settings.isBgColorEnabled !== false,
+        isPaddingEnabled: settings.isPaddingEnabled !== false,
         isActive: true,
       };
-      if (
-        legacyRule.targetSelector ||
-        legacyRule.fontFamily ||
-        legacyRule.fontSize ||
-        legacyRule.textColor
-      ) {
+      if (legacyRule.targetSelector || legacyRule.textColor) {
         rules.push(legacyRule);
       }
     }
 
-    if (rules.length === 0) return;
-
-    const style = document.createElement("style");
-    style.id = "site-magic-styles";
-
     let consolidatedCss = "";
-
     rules.forEach((rule) => {
       if (!rule.isActive) return;
 
@@ -134,7 +136,6 @@ interface StyleRule {
 
       const baseSelector = selectors.join(", ");
       let css = `${baseSelector} {`;
-
       if (
         rule.isFontFamilyEnabled !== false &&
         rule.fontFamily &&
@@ -148,12 +149,17 @@ interface StyleRule {
       if (rule.isTextColorEnabled !== false && rule.textColor) {
         css += `color: ${rule.textColor} !important;`;
       }
+      if (rule.isBgColorEnabled !== false && rule.bgColor) {
+        css += `background-color: ${rule.bgColor} !important;`;
+      }
+      if (rule.isPaddingEnabled !== false && rule.padding) {
+        css += `padding: ${rule.padding}px !important;`;
+      }
       css += "}";
       consolidatedCss += css + "\n";
     });
 
-    style.textContent = consolidatedCss;
-    document.documentElement.appendChild(style);
+    styleTag.textContent = consolidatedCss;
   };
 
   const getSettings = () => {
@@ -166,6 +172,9 @@ interface StyleRule {
         "isFontFamilyEnabled",
         "isFontSizeEnabled",
         "isTextColorEnabled",
+        "isBgColorEnabled",
+        "isPaddingEnabled",
+        "padding",
         "targetSelector",
       ],
       (result) => {
@@ -280,10 +289,19 @@ interface StyleRule {
     }
   };
 
-  chrome.runtime.onMessage.addListener((request) => {
+  chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     if (request.action === "startPicking") {
       startPicking();
+      sendResponse({ status: "success" });
+    } else if (request.action === "reapplyStyles") {
+      if (request.rules) {
+        applyStyles({ rules: request.rules });
+      } else {
+        getSettings();
+      }
+      sendResponse({ status: "success" });
     }
+    return true;
   });
 
   // Load initial styles

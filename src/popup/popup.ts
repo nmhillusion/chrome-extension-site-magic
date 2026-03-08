@@ -5,9 +5,13 @@ interface StyleRule {
   fontFamily: string;
   fontSize: string;
   textColor: string;
+  bgColor: string;
+  padding: string;
   isFontFamilyEnabled: boolean;
   isFontSizeEnabled: boolean;
   isTextColorEnabled: boolean;
+  isBgColorEnabled: boolean;
+  isPaddingEnabled: boolean;
   isActive: boolean;
 }
 
@@ -33,6 +37,16 @@ document.addEventListener("DOMContentLoaded", () => {
   ) as HTMLInputElement;
   const enableTextColor = document.getElementById(
     "enable-text-color",
+  ) as HTMLInputElement;
+  const bgColorInput = document.getElementById("bg-color") as HTMLInputElement;
+  const bgColorVal = document.getElementById("bg-color-val") as HTMLElement;
+  const enableBgColor = document.getElementById(
+    "enable-bg-color",
+  ) as HTMLInputElement;
+  const paddingInput = document.getElementById("padding") as HTMLInputElement;
+  const paddingVal = document.getElementById("padding-val") as HTMLElement;
+  const enablePadding = document.getElementById(
+    "enable-padding",
   ) as HTMLInputElement;
 
   const pickerBtn = document.getElementById("picker-btn") as HTMLButtonElement;
@@ -128,10 +142,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (enableTextColor)
       enableTextColor.checked = rule.isTextColorEnabled !== false;
 
+    if (enableBgColor) enableBgColor.checked = rule.isBgColorEnabled !== false;
+
     if (enableFontFamily)
       updateGroupState(enableFontFamily, "group-font-family");
     if (enableFontSize) updateGroupState(enableFontSize, "group-font-size");
     if (enableTextColor) updateGroupState(enableTextColor, "group-text-color");
+    if (enableBgColor) updateGroupState(enableBgColor, "group-bg-color");
+    if (enablePadding) updateGroupState(enablePadding, "group-padding");
+
+    if (bgColorInput) bgColorInput.value = rule.bgColor || "#ffffff";
+    if (bgColorVal)
+      bgColorVal.textContent = (rule.bgColor || "#ffffff").toUpperCase();
+
+    if (paddingInput) paddingInput.value = rule.padding || "0";
+    if (paddingVal) paddingVal.textContent = `${rule.padding || "0"}px`;
+
+    if (enablePadding) enablePadding.checked = rule.isPaddingEnabled !== false;
 
     if (targetInput) {
       targetInput.value = rule.targetSelector || "";
@@ -143,8 +170,31 @@ document.addEventListener("DOMContentLoaded", () => {
     renderRules();
   };
 
-  const saveToStorage = () => {
-    chrome.storage.sync.set({ rules, activeRuleId });
+  const notifyTabs = () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          { action: "reapplyStyles", rules },
+          () => {
+            if (chrome.runtime.lastError) {
+              const msg = chrome.runtime.lastError.message || "";
+              if (msg.includes("Could not establish connection")) {
+                console.warn(
+                  "Site Magic: Page not ready. Please reload the page to apply styles.",
+                );
+              }
+            }
+          },
+        );
+      }
+    });
+  };
+
+  const saveToStorage = (notify: boolean = true) => {
+    chrome.storage.sync.set({ rules, activeRuleId }, () => {
+      if (notify) notifyTabs();
+    });
   };
 
   const addRule = () => {
@@ -155,14 +205,18 @@ document.addEventListener("DOMContentLoaded", () => {
       fontFamily: "inherit",
       fontSize: "16",
       textColor: "#333333",
+      bgColor: "#ffffff",
+      padding: "0",
       isFontFamilyEnabled: true,
       isFontSizeEnabled: true,
       isTextColorEnabled: true,
+      isBgColorEnabled: true,
+      isPaddingEnabled: true,
       isActive: true,
     };
     rules.push(newRule);
     setActiveRule(newRule.id);
-    saveToStorage();
+    saveToStorage(true);
   };
 
   const deleteRule = (id: string) => {
@@ -175,7 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       addRule();
     }
-    saveToStorage();
+    saveToStorage(true);
     renderRules();
   };
 
@@ -193,14 +247,18 @@ document.addEventListener("DOMContentLoaded", () => {
         fontFamily: result.fontFamily || "inherit",
         fontSize: result.fontSize || "16",
         textColor: result.textColor || "#333333",
+        bgColor: result.bgColor || "#ffffff",
+        padding: result.padding || "0",
         isFontFamilyEnabled: result.isFontFamilyEnabled !== false,
         isFontSizeEnabled: result.isFontSizeEnabled !== false,
         isTextColorEnabled: result.isTextColorEnabled !== false,
+        isBgColorEnabled: result.isBgColorEnabled !== false,
+        isPaddingEnabled: result.isPaddingEnabled !== false,
         isActive: true,
       };
       rules = [legacyRule];
       activeRuleId = legacyRule.id;
-      saveToStorage();
+      saveToStorage(false);
     }
     if (activeRuleId) setActiveRule(activeRuleId);
   });
@@ -215,12 +273,26 @@ document.addEventListener("DOMContentLoaded", () => {
     rule.fontFamily = fontFamilySelect.value;
     rule.fontSize = fontSizeInput.value;
     rule.textColor = textColorInput.value;
+    rule.bgColor = bgColorInput.value;
+    rule.padding = paddingInput.value;
     rule.isFontFamilyEnabled = enableFontFamily.checked;
     rule.isFontSizeEnabled = enableFontSize.checked;
     rule.isTextColorEnabled = enableTextColor.checked;
+    rule.isBgColorEnabled = enableBgColor.checked;
+    rule.isPaddingEnabled = enablePadding.checked;
     rule.targetSelector = targetInput.value;
 
-    saveToStorage();
+    saveToStorage(true);
+  };
+
+  let debounceTimer: any;
+  const debouncedSave = () => {
+    clearTimeout(debounceTimer);
+    updateActiveRuleState();
+    notifyTabs(); // Live preview
+    debounceTimer = setTimeout(() => {
+      saveToStorage(true);
+    }, 500);
   };
 
   [
@@ -230,25 +302,85 @@ document.addEventListener("DOMContentLoaded", () => {
     enableFontFamily,
     enableFontSize,
     enableTextColor,
+    bgColorInput,
+    enableBgColor,
+    paddingInput,
+    enablePadding,
   ].forEach((el) => {
-    if (el) el.addEventListener("change", updateActiveRuleState);
+    if (el) el.addEventListener("change", debouncedSave);
   });
+
+  if (enableFontFamily) {
+    enableFontFamily.addEventListener("change", () =>
+      updateGroupState(enableFontFamily, "group-font-family"),
+    );
+  }
+  if (enableFontSize) {
+    enableFontSize.addEventListener("change", () =>
+      updateGroupState(enableFontSize, "group-font-size"),
+    );
+  }
+  if (enableTextColor) {
+    enableTextColor.addEventListener("change", () =>
+      updateGroupState(enableTextColor, "group-text-color"),
+    );
+  }
+  if (enableBgColor) {
+    enableBgColor.addEventListener("change", () =>
+      updateGroupState(enableBgColor, "group-bg-color"),
+    );
+  }
+  if (enablePadding) {
+    enablePadding.addEventListener("change", () =>
+      updateGroupState(enablePadding, "group-padding"),
+    );
+  }
 
   if (fontSizeInput) {
     fontSizeInput.addEventListener("input", (e) => {
-      if (fontSizeVal)
-        fontSizeVal.textContent = `${(e.target as HTMLInputElement).value}px`;
-      updateActiveRuleState();
+      const val = (e.target as HTMLInputElement).value;
+      if (fontSizeVal) fontSizeVal.textContent = `${val}px`;
+      const rule = getActiveRule();
+      if (rule) {
+        rule.fontSize = val;
+        notifyTabs(); // Live preview
+      }
+    });
+  }
+
+  if (paddingInput) {
+    paddingInput.addEventListener("input", (e) => {
+      const val = (e.target as HTMLInputElement).value;
+      if (paddingVal) paddingVal.textContent = `${val}px`;
+      const rule = getActiveRule();
+      if (rule) {
+        rule.padding = val;
+        notifyTabs(); // Live preview
+      }
     });
   }
 
   if (textColorInput) {
     textColorInput.addEventListener("input", (e) => {
-      if (textColorVal)
-        textColorVal.textContent = (
-          e.target as HTMLInputElement
-        ).value.toUpperCase();
-      updateActiveRuleState();
+      const val = (e.target as HTMLInputElement).value;
+      if (textColorVal) textColorVal.textContent = val.toUpperCase();
+      const rule = getActiveRule();
+      if (rule) {
+        rule.textColor = val;
+        notifyTabs(); // Live preview
+      }
+    });
+  }
+
+  if (bgColorInput) {
+    bgColorInput.addEventListener("input", (e) => {
+      const val = (e.target as HTMLInputElement).value;
+      if (bgColorVal) bgColorVal.textContent = val.toUpperCase();
+      const rule = getActiveRule();
+      if (rule) {
+        rule.bgColor = val;
+        notifyTabs(); // Live preview
+      }
     });
   }
 
@@ -257,7 +389,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const rule = getActiveRule();
       if (rule) {
         rule.targetSelector = (e.target as HTMLTextAreaElement).value;
-        saveToStorage();
+        debouncedSave();
         renderRules();
       }
     });
@@ -358,9 +490,13 @@ document.addEventListener("DOMContentLoaded", () => {
         rule.fontFamily = "inherit";
         rule.fontSize = "16";
         rule.textColor = "#333333";
+        rule.bgColor = "#ffffff";
+        rule.padding = "0";
         rule.isFontFamilyEnabled = true;
         rule.isFontSizeEnabled = true;
         rule.isTextColorEnabled = true;
+        rule.isBgColorEnabled = true;
+        rule.isPaddingEnabled = true;
         rule.targetSelector = "";
         setActiveRule(rule.id);
         saveToStorage();
