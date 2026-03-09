@@ -662,6 +662,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (resetBtn) {
     resetBtn.addEventListener("click", () => {
+      // Ask user to confirm reset to avoid accidental clicks
+      const confirmed = window.confirm(
+        "Reset this rule to defaults? This will undo any unsaved changes.",
+      );
+      if (!confirmed) return;
+
       const rule = getActiveRule();
       if (rule) {
         rule.fontFamily = "inherit";
