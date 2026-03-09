@@ -55,16 +55,14 @@ html(lang="en")
               option(value="'Cascadia Mono', monospace") Cascadia Mono
               option(value="'Playfair Display', serif") Playfair Display
 
-        .control-group#group-font-size
+        .control-group#group-text-styles
           .control-header
-            label(for="font-size") Font Size (px)
-            label.toggle-switch
-              input#enable-font-size(type="checkbox" checked)
-              span.slider
+            label Text Styles
           .control-content
-            .slider-container
-              input#font-size(type="range" min="12" max="32" value="16")
-              span#font-size-val 16px
+            .text-styles-group
+              button#toggle-bold.style-btn(title="Bold") B
+              button#toggle-italic.style-btn(title="Italic") I
+              button#toggle-underline.style-btn(title="Underline") U
 
         .control-group#group-text-color
           .control-header
@@ -77,14 +75,16 @@ html(lang="en")
               input#text-color(type="color" value="#333333")
               span#text-color-val #333333
 
-        .control-group#group-text-styles
+        .control-group#group-font-size
           .control-header
-            label Text Styles
+            label(for="font-size") Font Size (px)
+            label.toggle-switch
+              input#enable-font-size(type="checkbox" checked)
+              span.slider
           .control-content
-            .text-styles-group
-              button#toggle-bold.style-btn(title="Bold") B
-              button#toggle-italic.style-btn(title="Italic") I
-              button#toggle-underline.style-btn(title="Underline") U
+            .slider-container
+              input#font-size(type="range" min="12" max="32" value="16")
+              span#font-size-val 16px
 
         .control-group#group-bg-color
           .control-header
@@ -110,14 +110,17 @@ html(lang="en")
 
         .control-group#group-border-radius
           .control-header
-            label(for="border-radius") Border Radius (%)
+            label(for="border-radius") Border Radius
             label.toggle-switch
               input#enable-border-radius(type="checkbox" checked)
               span.slider
           .control-content
             .slider-container
-              input#border-radius(type="range" min="0" max="50" value="0")
-              span#border-radius-val 0%
+              select#border-radius-unit.unit-select
+                option(value="px") px
+                option(value="%") %
+              input#border-radius(type="range" min="0" max="100" value="0")
+              span#border-radius-val 0px
 
       footer
         .button-row

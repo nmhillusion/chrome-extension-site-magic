@@ -8,6 +8,7 @@ interface StyleRule {
   bgColor: string;
   padding: string;
   borderRadius: string;
+  borderRadiusUnit: string;
   fontWeight: string;
   fontStyle: string;
   textDecoration: string;
@@ -104,6 +105,7 @@ interface StyleRule {
         bgColor: settings.bgColor,
         padding: settings.padding,
         borderRadius: settings.borderRadius || "0",
+        borderRadiusUnit: settings.borderRadiusUnit || "px",
         fontWeight: settings.fontWeight || "normal",
         fontStyle: settings.fontStyle || "normal",
         textDecoration: settings.textDecoration || "none",
@@ -142,7 +144,8 @@ interface StyleRule {
         containerCss += `padding: ${rule.padding}px !important;`;
       }
       if (rule.isBorderRadiusEnabled !== false && rule.borderRadius) {
-        containerCss += `border-radius: ${rule.borderRadius}% !important;`;
+        const unit = rule.borderRadiusUnit || "px";
+        containerCss += `border-radius: ${rule.borderRadius}${unit} !important;`;
       }
 
       // Inherited properties (Applied to container as well)
@@ -219,6 +222,8 @@ interface StyleRule {
         "isBgColorEnabled",
         "isPaddingEnabled",
         "padding",
+        "borderRadius",
+        "borderRadiusUnit",
         "targetSelector",
       ],
       (result) => {

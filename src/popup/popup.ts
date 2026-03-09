@@ -8,6 +8,7 @@ interface StyleRule {
   bgColor: string;
   padding: string;
   borderRadius: string;
+  borderRadiusUnit: string;
   fontWeight: string;
   fontStyle: string;
   textDecoration: string;
@@ -66,6 +67,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const enableBorderRadius = document.getElementById(
     "enable-border-radius",
   ) as HTMLInputElement;
+  const borderRadiusUnitSelect = document.getElementById(
+    "border-radius-unit",
+  ) as HTMLSelectElement;
 
   const toggleBold = document.getElementById(
     "toggle-bold",
@@ -194,8 +198,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if (enablePadding) enablePadding.checked = rule.isPaddingEnabled !== false;
 
     if (borderRadiusInput) borderRadiusInput.value = rule.borderRadius || "0";
+    if (borderRadiusUnitSelect)
+      borderRadiusUnitSelect.value = rule.borderRadiusUnit || "px";
     if (borderRadiusVal)
-      borderRadiusVal.textContent = `${rule.borderRadius || "0"}%`;
+      borderRadiusVal.textContent = `${rule.borderRadius || "0"}${rule.borderRadiusUnit || "px"}`;
+    if (borderRadiusInput) {
+      if (rule.borderRadiusUnit === "%") {
+        borderRadiusInput.max = "50";
+      } else {
+        borderRadiusInput.max = "100";
+      }
+    }
     if (enableBorderRadius)
       enableBorderRadius.checked = rule.isBorderRadiusEnabled !== false;
 
@@ -260,6 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
       bgColor: "#ffffff",
       padding: "0",
       borderRadius: "0",
+      borderRadiusUnit: "px",
       fontWeight: "normal",
       fontStyle: "normal",
       textDecoration: "none",
@@ -310,6 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
         bgColor: result.bgColor || "#ffffff",
         padding: result.padding || "0",
         borderRadius: result.borderRadius || "0",
+        borderRadiusUnit: result.borderRadiusUnit || "px",
         fontWeight: result.fontWeight || "normal",
         fontStyle: result.fontStyle || "normal",
         textDecoration: result.textDecoration || "none",
@@ -344,6 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
     rule.bgColor = bgColorInput.value;
     rule.padding = paddingInput.value;
     rule.borderRadius = borderRadiusInput.value;
+    rule.borderRadiusUnit = borderRadiusUnitSelect.value;
     rule.isFontFamilyEnabled = enableFontFamily.checked;
     rule.isFontSizeEnabled = enableFontSize.checked;
     rule.isTextColorEnabled = enableTextColor.checked;
@@ -379,6 +395,7 @@ document.addEventListener("DOMContentLoaded", () => {
     paddingInput,
     enablePadding,
     borderRadiusInput,
+    borderRadiusUnitSelect,
     enableBorderRadius,
   ].forEach((el) => {
     if (el) el.addEventListener("change", debouncedSave);
@@ -393,11 +410,36 @@ document.addEventListener("DOMContentLoaded", () => {
   if (borderRadiusInput) {
     borderRadiusInput.addEventListener("input", (e) => {
       const val = (e.target as HTMLInputElement).value;
-      if (borderRadiusVal) borderRadiusVal.textContent = `${val}%`;
+      const unit = borderRadiusUnitSelect ? borderRadiusUnitSelect.value : "px";
+      if (borderRadiusVal) borderRadiusVal.textContent = `${val}${unit}`;
       const rule = getActiveRule();
       if (rule) {
         rule.borderRadius = val;
         notifyTabs(); // Live preview
+      }
+    });
+  }
+
+  if (borderRadiusUnitSelect) {
+    borderRadiusUnitSelect.addEventListener("change", (e) => {
+      const unit = (e.target as HTMLSelectElement).value;
+      const rule = getActiveRule();
+      if (rule) {
+        rule.borderRadiusUnit = unit;
+        rule.borderRadius = "0"; // Reset value to 0 on unit change
+
+        // Update UI
+        if (borderRadiusInput) {
+          borderRadiusInput.value = "0";
+          if (unit === "px") {
+            borderRadiusInput.max = "100";
+          } else {
+            borderRadiusInput.max = "50";
+          }
+        }
+        if (borderRadiusVal) borderRadiusVal.textContent = `0${unit}`;
+
+        debouncedSave();
       }
     });
   }
@@ -627,6 +669,8 @@ document.addEventListener("DOMContentLoaded", () => {
         rule.textColor = "#333333";
         rule.bgColor = "#ffffff";
         rule.padding = "0";
+        rule.borderRadius = "0";
+        rule.borderRadiusUnit = "px";
         rule.isFontFamilyEnabled = true;
         rule.isFontSizeEnabled = true;
         rule.isTextColorEnabled = true;
