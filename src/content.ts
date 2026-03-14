@@ -2,25 +2,15 @@ interface StyleRule {
   id: string;
   name: string;
   targetSelector: string;
-  fontFamily: string;
-  fontSize: string;
-  textColor: string;
-  bgColor: string;
-  padding: string;
-  borderRadius: string;
-  borderRadiusUnit: string;
-  fontWeight: string;
-  fontStyle: string;
-  textDecoration: string;
-  isFontFamilyEnabled: boolean;
-  isFontSizeEnabled: boolean;
-  isTextColorEnabled: boolean;
-  isBgColorEnabled: boolean;
-  isPaddingEnabled: boolean;
-  isBorderRadiusEnabled: boolean;
-  isFontWeightEnabled: boolean;
-  isFontStyleEnabled: boolean;
-  isTextDecorationEnabled: boolean;
+  fontFamily: { isEnabled: boolean; value: string };
+  fontSize: { isEnabled: boolean; value: string };
+  textColor: { isEnabled: boolean; value: string };
+  bgColor: { isEnabled: boolean; value: string };
+  padding: { isEnabled: boolean; value: string };
+  borderRadius: { isEnabled: boolean; value: string; unit: string };
+  fontWeight: { isEnabled: boolean; value: string };
+  fontStyle: { isEnabled: boolean; value: string };
+  textDecoration: { isEnabled: boolean; value: string };
   isActive: boolean;
 }
 
@@ -43,11 +33,11 @@ interface StyleRule {
     rules.forEach((rule) => {
       if (
         rule.isActive &&
-        rule.isFontFamilyEnabled !== false &&
-        rule.fontFamily
+        rule.fontFamily.isEnabled !== false &&
+        rule.fontFamily.value
       ) {
         // Extract font name from possible CSS quotes, e.g. "'Inter', sans-serif" -> "Inter"
-        const match = rule.fontFamily.match(/'?([^',]+)'?/);
+        const match = rule.fontFamily.value.match(/'?([^',]+)'?/);
         if (match && FONT_MAP[match[1]]) {
           fontsToLoad.add(FONT_MAP[match[1]] as string);
         }
@@ -99,28 +89,46 @@ interface StyleRule {
         id: "legacy",
         name: "Legacy Rule",
         targetSelector: settings.targetSelector,
-        fontFamily: settings.fontFamily,
-        fontSize: settings.fontSize,
-        textColor: settings.textColor,
-        bgColor: settings.bgColor,
-        padding: settings.padding,
-        borderRadius: settings.borderRadius || "0",
-        borderRadiusUnit: settings.borderRadiusUnit || "px",
-        fontWeight: settings.fontWeight || "normal",
-        fontStyle: settings.fontStyle || "normal",
-        textDecoration: settings.textDecoration || "none",
-        isFontFamilyEnabled: settings.isFontFamilyEnabled !== false,
-        isFontSizeEnabled: settings.isFontSizeEnabled !== false,
-        isTextColorEnabled: settings.isTextColorEnabled !== false,
-        isBgColorEnabled: settings.isBgColorEnabled !== false,
-        isPaddingEnabled: settings.isPaddingEnabled !== false,
-        isBorderRadiusEnabled: settings.isBorderRadiusEnabled !== false,
-        isFontWeightEnabled: settings.isFontWeightEnabled !== false,
-        isFontStyleEnabled: settings.isFontStyleEnabled !== false,
-        isTextDecorationEnabled: settings.isTextDecorationEnabled !== false,
+        fontFamily: {
+          isEnabled: settings.isFontFamilyEnabled !== false,
+          value: settings.fontFamily || "inherit",
+        },
+        fontSize: {
+          isEnabled: settings.isFontSizeEnabled !== false,
+          value: settings.fontSize || "16",
+        },
+        textColor: {
+          isEnabled: settings.isTextColorEnabled !== false,
+          value: settings.textColor || "#333333",
+        },
+        bgColor: {
+          isEnabled: settings.isBgColorEnabled !== false,
+          value: settings.bgColor || "#ffffff",
+        },
+        padding: {
+          isEnabled: settings.isPaddingEnabled !== false,
+          value: settings.padding || "0",
+        },
+        borderRadius: {
+          isEnabled: settings.isBorderRadiusEnabled !== false,
+          value: settings.borderRadius || "0",
+          unit: settings.borderRadiusUnit || "px",
+        },
+        fontWeight: {
+          isEnabled: settings.isFontWeightEnabled !== false,
+          value: settings.fontWeight || "normal",
+        },
+        fontStyle: {
+          isEnabled: settings.isFontStyleEnabled !== false,
+          value: settings.fontStyle || "normal",
+        },
+        textDecoration: {
+          isEnabled: settings.isTextDecorationEnabled !== false,
+          value: settings.textDecoration || "none",
+        },
         isActive: true,
       };
-      if (legacyRule.targetSelector || legacyRule.textColor) {
+      if (legacyRule.targetSelector || legacyRule.textColor.value) {
         rules.push(legacyRule);
       }
     }
@@ -137,39 +145,42 @@ interface StyleRule {
       let containerCss = `${containerSelector} {`;
 
       // Structural properties (Container only)
-      if (rule.isBgColorEnabled !== false && rule.bgColor) {
-        containerCss += `background-color: ${rule.bgColor} !important;`;
+      if (rule.bgColor.isEnabled !== false && rule.bgColor.value) {
+        containerCss += `background-color: ${rule.bgColor.value} !important;`;
       }
-      if (rule.isPaddingEnabled !== false && rule.padding) {
-        containerCss += `padding: ${rule.padding}px !important;`;
+      if (rule.padding.isEnabled !== false && rule.padding.value) {
+        containerCss += `padding: ${rule.padding.value}px !important;`;
       }
-      if (rule.isBorderRadiusEnabled !== false && rule.borderRadius) {
-        const unit = rule.borderRadiusUnit || "px";
-        containerCss += `border-radius: ${rule.borderRadius}${unit} !important;`;
+      if (rule.borderRadius.isEnabled !== false && rule.borderRadius.value) {
+        const unit = rule.borderRadius.unit || "px";
+        containerCss += `border-radius: ${rule.borderRadius.value}${unit} !important;`;
       }
 
       // Inherited properties (Applied to container as well)
       if (
-        rule.isFontFamilyEnabled !== false &&
-        rule.fontFamily &&
-        rule.fontFamily !== "inherit"
+        rule.fontFamily.isEnabled !== false &&
+        rule.fontFamily.value &&
+        rule.fontFamily.value !== "inherit"
       ) {
-        containerCss += `font-family: ${rule.fontFamily} !important;`;
+        containerCss += `font-family: ${rule.fontFamily.value} !important;`;
       }
-      if (rule.isFontSizeEnabled !== false && rule.fontSize) {
-        containerCss += `font-size: ${rule.fontSize}px !important;`;
+      if (rule.fontSize.isEnabled !== false && rule.fontSize.value) {
+        containerCss += `font-size: ${rule.fontSize.value}px !important;`;
       }
-      if (rule.isTextColorEnabled !== false && rule.textColor) {
-        containerCss += `color: ${rule.textColor} !important;`;
+      if (rule.textColor.isEnabled !== false && rule.textColor.value) {
+        containerCss += `color: ${rule.textColor.value} !important;`;
       }
-      if (rule.isFontWeightEnabled !== false && rule.fontWeight) {
-        containerCss += `font-weight: ${rule.fontWeight} !important;`;
+      if (rule.fontWeight.isEnabled !== false && rule.fontWeight.value) {
+        containerCss += `font-weight: ${rule.fontWeight.value} !important;`;
       }
-      if (rule.isFontStyleEnabled !== false && rule.fontStyle) {
-        containerCss += `font-style: ${rule.fontStyle} !important;`;
+      if (rule.fontStyle.isEnabled !== false && rule.fontStyle.value) {
+        containerCss += `font-style: ${rule.fontStyle.value} !important;`;
       }
-      if (rule.isTextDecorationEnabled !== false && rule.textDecoration) {
-        containerCss += `text-decoration: ${rule.textDecoration} !important;`;
+      if (
+        rule.textDecoration.isEnabled !== false &&
+        rule.textDecoration.value
+      ) {
+        containerCss += `text-decoration: ${rule.textDecoration.value} !important;`;
       }
       containerCss += "}\n";
       consolidatedCss += containerCss;
@@ -181,26 +192,29 @@ interface StyleRule {
 
       let childCss = `${childSelector} {`;
       if (
-        rule.isFontFamilyEnabled !== false &&
-        rule.fontFamily &&
-        rule.fontFamily !== "inherit"
+        rule.fontFamily.isEnabled !== false &&
+        rule.fontFamily.value &&
+        rule.fontFamily.value !== "inherit"
       ) {
-        childCss += `font-family: ${rule.fontFamily} !important;`;
+        childCss += `font-family: ${rule.fontFamily.value} !important;`;
       }
-      if (rule.isFontSizeEnabled !== false && rule.fontSize) {
-        childCss += `font-size: ${rule.fontSize}px !important;`;
+      if (rule.fontSize.isEnabled !== false && rule.fontSize.value) {
+        childCss += `font-size: ${rule.fontSize.value}px !important;`;
       }
-      if (rule.isTextColorEnabled !== false && rule.textColor) {
-        childCss += `color: ${rule.textColor} !important;`;
+      if (rule.textColor.isEnabled !== false && rule.textColor.value) {
+        childCss += `color: ${rule.textColor.value} !important;`;
       }
-      if (rule.isFontWeightEnabled !== false && rule.fontWeight) {
-        childCss += `font-weight: ${rule.fontWeight} !important;`;
+      if (rule.fontWeight.isEnabled !== false && rule.fontWeight.value) {
+        childCss += `font-weight: ${rule.fontWeight.value} !important;`;
       }
-      if (rule.isFontStyleEnabled !== false && rule.fontStyle) {
-        childCss += `font-style: ${rule.fontStyle} !important;`;
+      if (rule.fontStyle.isEnabled !== false && rule.fontStyle.value) {
+        childCss += `font-style: ${rule.fontStyle.value} !important;`;
       }
-      if (rule.isTextDecorationEnabled !== false && rule.textDecoration) {
-        childCss += `text-decoration: ${rule.textDecoration} !important;`;
+      if (
+        rule.textDecoration.isEnabled !== false &&
+        rule.textDecoration.value
+      ) {
+        childCss += `text-decoration: ${rule.textDecoration.value} !important;`;
       }
       childCss += "}\n";
       consolidatedCss += childCss;

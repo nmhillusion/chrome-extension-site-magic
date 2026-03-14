@@ -2,25 +2,15 @@ interface StyleRule {
   id: string;
   name: string;
   targetSelector: string;
-  fontFamily: string;
-  fontSize: string;
-  textColor: string;
-  bgColor: string;
-  padding: string;
-  borderRadius: string;
-  borderRadiusUnit: string;
-  fontWeight: string;
-  fontStyle: string;
-  textDecoration: string;
-  isFontFamilyEnabled: boolean;
-  isFontSizeEnabled: boolean;
-  isTextColorEnabled: boolean;
-  isBgColorEnabled: boolean;
-  isPaddingEnabled: boolean;
-  isBorderRadiusEnabled: boolean;
-  isFontWeightEnabled: boolean;
-  isFontStyleEnabled: boolean;
-  isTextDecorationEnabled: boolean;
+  fontFamily: { isEnabled: boolean; value: string };
+  fontSize: { isEnabled: boolean; value: string };
+  textColor: { isEnabled: boolean; value: string };
+  bgColor: { isEnabled: boolean; value: string };
+  padding: { isEnabled: boolean; value: string };
+  borderRadius: { isEnabled: boolean; value: string; unit: string };
+  fontWeight: { isEnabled: boolean; value: string };
+  fontStyle: { isEnabled: boolean; value: string };
+  textDecoration: { isEnabled: boolean; value: string };
   isActive: boolean;
 }
 
@@ -163,23 +153,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const rule = getActiveRule();
     if (!rule) return;
 
-    if (fontFamilySelect) fontFamilySelect.value = rule.fontFamily || "inherit";
-    if (fontSizeInput) fontSizeInput.value = rule.fontSize || "16";
-    if (fontSizeVal) fontSizeVal.textContent = `${rule.fontSize || "16"}px`;
-    if (textColorInput) textColorInput.value = rule.textColor || "#333333";
+    if (fontFamilySelect)
+      fontFamilySelect.value = rule.fontFamily.value || "inherit";
+    if (fontSizeInput) fontSizeInput.value = rule.fontSize.value || "16";
+    if (fontSizeVal)
+      fontSizeVal.textContent = `${rule.fontSize.value || "16"}px`;
+    if (textColorInput)
+      textColorInput.value = rule.textColor.value || "#333333";
     if (textColorVal)
-      textColorVal.textContent = (rule.textColor || "#333333").toUpperCase();
+      textColorVal.textContent = (
+        rule.textColor.value || "#333333"
+      ).toUpperCase();
 
     if (enableFontFamily)
-      enableFontFamily.checked = rule.isFontFamilyEnabled !== false;
+      enableFontFamily.checked = rule.fontFamily.isEnabled !== false;
     if (enableFontSize)
-      enableFontSize.checked = rule.isFontSizeEnabled !== false;
+      enableFontSize.checked = rule.fontSize.isEnabled !== false;
     if (enableTextColor)
-      enableTextColor.checked = rule.isTextColorEnabled !== false;
+      enableTextColor.checked = rule.textColor.isEnabled !== false;
 
     if (ruleNameInput) ruleNameInput.value = rule.name || "";
 
-    if (enableBgColor) enableBgColor.checked = rule.isBgColorEnabled !== false;
+    if (enableBgColor) enableBgColor.checked = rule.bgColor.isEnabled !== false;
 
     if (enableFontFamily)
       updateGroupState(enableFontFamily, "group-font-family");
@@ -188,38 +183,42 @@ document.addEventListener("DOMContentLoaded", () => {
     if (enableBgColor) updateGroupState(enableBgColor, "group-bg-color");
     if (enablePadding) updateGroupState(enablePadding, "group-padding");
 
-    if (bgColorInput) bgColorInput.value = rule.bgColor || "#ffffff";
+    if (bgColorInput) bgColorInput.value = rule.bgColor.value || "#ffffff";
     if (bgColorVal)
-      bgColorVal.textContent = (rule.bgColor || "#ffffff").toUpperCase();
+      bgColorVal.textContent = (rule.bgColor.value || "#ffffff").toUpperCase();
 
-    if (paddingInput) paddingInput.value = rule.padding || "0";
-    if (paddingVal) paddingVal.textContent = `${rule.padding || "0"}px`;
+    if (paddingInput) paddingInput.value = rule.padding.value || "0";
+    if (paddingVal) paddingVal.textContent = `${rule.padding.value || "0"}px`;
 
-    if (enablePadding) enablePadding.checked = rule.isPaddingEnabled !== false;
+    if (enablePadding) enablePadding.checked = rule.padding.isEnabled !== false;
 
-    if (borderRadiusInput) borderRadiusInput.value = rule.borderRadius || "0";
+    if (borderRadiusInput)
+      borderRadiusInput.value = rule.borderRadius.value || "0";
     if (borderRadiusUnitSelect)
-      borderRadiusUnitSelect.value = rule.borderRadiusUnit || "px";
+      borderRadiusUnitSelect.value = rule.borderRadius.unit || "px";
     if (borderRadiusVal)
-      borderRadiusVal.textContent = `${rule.borderRadius || "0"}${rule.borderRadiusUnit || "px"}`;
+      borderRadiusVal.textContent = `${rule.borderRadius.value || "0"}${rule.borderRadius.unit || "px"}`;
     if (borderRadiusInput) {
-      if (rule.borderRadiusUnit === "%") {
+      if (rule.borderRadius.unit === "%") {
         borderRadiusInput.max = "50";
       } else {
         borderRadiusInput.max = "100";
       }
     }
     if (enableBorderRadius)
-      enableBorderRadius.checked = rule.isBorderRadiusEnabled !== false;
+      enableBorderRadius.checked = rule.borderRadius.isEnabled !== false;
 
     if (toggleBold)
-      toggleBold.classList.toggle("active", rule.fontWeight === "bold");
+      toggleBold.classList.toggle("active", rule.fontWeight.value === "bold");
     if (toggleItalic)
-      toggleItalic.classList.toggle("active", rule.fontStyle === "italic");
+      toggleItalic.classList.toggle(
+        "active",
+        rule.fontStyle.value === "italic",
+      );
     if (toggleUnderline)
       toggleUnderline.classList.toggle(
         "active",
-        rule.textDecoration === "underline",
+        rule.textDecoration.value === "underline",
       );
 
     if (enableBorderRadius)
@@ -267,25 +266,15 @@ document.addEventListener("DOMContentLoaded", () => {
       id: generateId(),
       name: `Style Rule ${rules.length + 1}`,
       targetSelector: "",
-      fontFamily: "inherit",
-      fontSize: "16",
-      textColor: "#333333",
-      bgColor: "#ffffff",
-      padding: "0",
-      borderRadius: "0",
-      borderRadiusUnit: "px",
-      fontWeight: "normal",
-      fontStyle: "normal",
-      textDecoration: "none",
-      isFontFamilyEnabled: true,
-      isFontSizeEnabled: true,
-      isTextColorEnabled: true,
-      isBgColorEnabled: true,
-      isPaddingEnabled: true,
-      isBorderRadiusEnabled: true,
-      isFontWeightEnabled: true,
-      isFontStyleEnabled: true,
-      isTextDecorationEnabled: true,
+      fontFamily: { isEnabled: true, value: "inherit" },
+      fontSize: { isEnabled: true, value: "16" },
+      textColor: { isEnabled: true, value: "#333333" },
+      bgColor: { isEnabled: true, value: "#ffffff" },
+      padding: { isEnabled: true, value: "0" },
+      borderRadius: { isEnabled: true, value: "0", unit: "px" },
+      fontWeight: { isEnabled: true, value: "normal" },
+      fontStyle: { isEnabled: true, value: "normal" },
+      textDecoration: { isEnabled: true, value: "none" },
       isActive: true,
     };
     rules.push(newRule);
@@ -318,25 +307,43 @@ document.addEventListener("DOMContentLoaded", () => {
         id: generateId(),
         name: "Primary Style",
         targetSelector: result.targetSelector || "",
-        fontFamily: result.fontFamily || "inherit",
-        fontSize: result.fontSize || "16",
-        textColor: result.textColor || "#333333",
-        bgColor: result.bgColor || "#ffffff",
-        padding: result.padding || "0",
-        borderRadius: result.borderRadius || "0",
-        borderRadiusUnit: result.borderRadiusUnit || "px",
-        fontWeight: result.fontWeight || "normal",
-        fontStyle: result.fontStyle || "normal",
-        textDecoration: result.textDecoration || "none",
-        isFontFamilyEnabled: result.isFontFamilyEnabled !== false,
-        isFontSizeEnabled: result.isFontSizeEnabled !== false,
-        isTextColorEnabled: result.isTextColorEnabled !== false,
-        isBgColorEnabled: result.isBgColorEnabled !== false,
-        isPaddingEnabled: result.isPaddingEnabled !== false,
-        isBorderRadiusEnabled: result.isBorderRadiusEnabled !== false,
-        isFontWeightEnabled: result.isFontWeightEnabled !== false,
-        isFontStyleEnabled: result.isFontStyleEnabled !== false,
-        isTextDecorationEnabled: result.isTextDecorationEnabled !== false,
+        fontFamily: {
+          isEnabled: result.isFontFamilyEnabled !== false,
+          value: result.fontFamily || "inherit",
+        },
+        fontSize: {
+          isEnabled: result.isFontSizeEnabled !== false,
+          value: result.fontSize || "16",
+        },
+        textColor: {
+          isEnabled: result.isTextColorEnabled !== false,
+          value: result.textColor || "#333333",
+        },
+        bgColor: {
+          isEnabled: result.isBgColorEnabled !== false,
+          value: result.bgColor || "#ffffff",
+        },
+        padding: {
+          isEnabled: result.isPaddingEnabled !== false,
+          value: result.padding || "0",
+        },
+        borderRadius: {
+          isEnabled: result.isBorderRadiusEnabled !== false,
+          value: result.borderRadius || "0",
+          unit: result.borderRadiusUnit || "px",
+        },
+        fontWeight: {
+          isEnabled: result.isFontWeightEnabled !== false,
+          value: result.fontWeight || "normal",
+        },
+        fontStyle: {
+          isEnabled: result.isFontStyleEnabled !== false,
+          value: result.fontStyle || "normal",
+        },
+        textDecoration: {
+          isEnabled: result.isTextDecorationEnabled !== false,
+          value: result.textDecoration || "none",
+        },
         isActive: true,
       };
       rules = [legacyRule];
@@ -353,19 +360,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const rule = getActiveRule();
     if (!rule) return;
 
-    rule.fontFamily = fontFamilySelect.value;
-    rule.fontSize = fontSizeInput.value;
-    rule.textColor = textColorInput.value;
-    rule.bgColor = bgColorInput.value;
-    rule.padding = paddingInput.value;
-    rule.borderRadius = borderRadiusInput.value;
-    rule.borderRadiusUnit = borderRadiusUnitSelect.value;
-    rule.isFontFamilyEnabled = enableFontFamily.checked;
-    rule.isFontSizeEnabled = enableFontSize.checked;
-    rule.isTextColorEnabled = enableTextColor.checked;
-    rule.isBgColorEnabled = enableBgColor.checked;
-    rule.isPaddingEnabled = enablePadding.checked;
-    rule.isBorderRadiusEnabled = enableBorderRadius.checked;
+    rule.fontFamily.value = fontFamilySelect.value;
+    rule.fontSize.value = fontSizeInput.value;
+    rule.textColor.value = textColorInput.value;
+    rule.bgColor.value = bgColorInput.value;
+    rule.padding.value = paddingInput.value;
+    rule.borderRadius.value = borderRadiusInput.value;
+    rule.borderRadius.unit = borderRadiusUnitSelect.value;
+    rule.fontFamily.isEnabled = enableFontFamily.checked;
+    rule.fontSize.isEnabled = enableFontSize.checked;
+    rule.textColor.isEnabled = enableTextColor.checked;
+    rule.bgColor.isEnabled = enableBgColor.checked;
+    rule.padding.isEnabled = enablePadding.checked;
+    rule.borderRadius.isEnabled = enableBorderRadius.checked;
     rule.targetSelector = targetInput.value;
     if (ruleNameInput) {
       rule.name = ruleNameInput.value;
@@ -410,11 +417,13 @@ document.addEventListener("DOMContentLoaded", () => {
   if (borderRadiusInput) {
     borderRadiusInput.addEventListener("input", (e) => {
       const val = (e.target as HTMLInputElement).value;
-      const unit = borderRadiusUnitSelect ? borderRadiusUnitSelect.value : "px";
-      if (borderRadiusVal) borderRadiusVal.textContent = `${val}${unit}`;
       const rule = getActiveRule();
+      const unit = borderRadiusUnitSelect
+        ? borderRadiusUnitSelect.value
+        : rule?.borderRadius.unit || "px";
+      if (borderRadiusVal) borderRadiusVal.textContent = `${val}${unit}`;
       if (rule) {
-        rule.borderRadius = val;
+        rule.borderRadius.value = val;
         notifyTabs(); // Live preview
       }
     });
@@ -425,8 +434,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const unit = (e.target as HTMLSelectElement).value;
       const rule = getActiveRule();
       if (rule) {
-        rule.borderRadiusUnit = unit;
-        rule.borderRadius = "0"; // Reset value to 0 on unit change
+        rule.borderRadius.unit = unit;
+        rule.borderRadius.value = "0"; // Reset value to 0 on unit change
 
         // Update UI
         if (borderRadiusInput) {
@@ -453,9 +462,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const rule = getActiveRule();
     if (!rule) return;
 
-    const currentVal = rule[prop] as string;
-    const newVal = currentVal === activeVal ? normalVal : activeVal;
-    (rule as any)[prop] = newVal;
+    const currentConfig = rule[prop] as any;
+    const newVal = currentConfig.value === activeVal ? normalVal : activeVal;
+    currentConfig.value = newVal;
     btn.classList.toggle("active", newVal === activeVal);
     debouncedSave();
   };
@@ -508,7 +517,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (fontSizeVal) fontSizeVal.textContent = `${val}px`;
       const rule = getActiveRule();
       if (rule) {
-        rule.fontSize = val;
+        rule.fontSize.value = val;
         notifyTabs(); // Live preview
       }
     });
@@ -520,7 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (paddingVal) paddingVal.textContent = `${val}px`;
       const rule = getActiveRule();
       if (rule) {
-        rule.padding = val;
+        rule.padding.value = val;
         notifyTabs(); // Live preview
       }
     });
@@ -532,7 +541,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (textColorVal) textColorVal.textContent = val.toUpperCase();
       const rule = getActiveRule();
       if (rule) {
-        rule.textColor = val;
+        rule.textColor.value = val;
         notifyTabs(); // Live preview
       }
     });
@@ -544,7 +553,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (bgColorVal) bgColorVal.textContent = val.toUpperCase();
       const rule = getActiveRule();
       if (rule) {
-        rule.bgColor = val;
+        rule.bgColor.value = val;
         notifyTabs(); // Live preview
       }
     });
@@ -574,12 +583,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (pickerBtn) {
     pickerBtn.addEventListener("click", () => {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.id) {
-          chrome.tabs.sendMessage(tabs[0].id, { action: "startPicking" });
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+        if (tabs && tabs.length > 0 && tabs[0].id) {
+          chrome.tabs.sendMessage(tabs[0].id, { action: "startPicking" }, () => {
+             if (chrome.runtime.lastError) {
+                console.error("Error sending message to tab: ", chrome.runtime.lastError);
+                // Optionally reset UI if failed
+                if (pickingStatus) pickingStatus.textContent = "Error: Please reload the page.";
+                pickerBtn.disabled = false;
+                pickerBtn.style.opacity = "1";
+             }
+          });
           if (pickingStatus) pickingStatus.textContent = "● Picking...";
           pickerBtn.disabled = true;
           pickerBtn.style.opacity = "0.5";
+        } else {
+          console.warn("Could not find an active tab to start picking.");
         }
       });
     });
@@ -670,18 +689,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const rule = getActiveRule();
       if (rule) {
-        rule.fontFamily = "inherit";
-        rule.fontSize = "16";
-        rule.textColor = "#333333";
-        rule.bgColor = "#ffffff";
-        rule.padding = "0";
-        rule.borderRadius = "0";
-        rule.borderRadiusUnit = "px";
-        rule.isFontFamilyEnabled = true;
-        rule.isFontSizeEnabled = true;
-        rule.isTextColorEnabled = true;
-        rule.isBgColorEnabled = true;
-        rule.isPaddingEnabled = true;
+        rule.fontFamily.value = "inherit";
+        rule.fontSize.value = "16";
+        rule.textColor.value = "#333333";
+        rule.bgColor.value = "#ffffff";
+        rule.padding.value = "0";
+        rule.borderRadius.value = "0";
+        rule.borderRadius.unit = "px";
+        rule.fontFamily.isEnabled = true;
+        rule.fontSize.isEnabled = true;
+        rule.textColor.isEnabled = true;
+        rule.bgColor.isEnabled = true;
+        rule.padding.isEnabled = true;
+        rule.borderRadius.isEnabled = true;
         rule.targetSelector = "";
         setActiveRule(rule.id);
         saveToStorage();
