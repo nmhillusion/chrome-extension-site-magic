@@ -68,22 +68,51 @@ interface StyleRule {
     }
   };
 
+  const buildInheritedCss = (rule: StyleRule): string => {
+    let css = "";
+    if (
+      rule.fontFamily.isEnabled !== false &&
+      rule.fontFamily.value &&
+      rule.fontFamily.value !== "inherit"
+    ) {
+      css += `font-family: ${rule.fontFamily.value} !important;`;
+    }
+    if (rule.fontSize.isEnabled !== false && rule.fontSize.value) {
+      css += `font-size: ${rule.fontSize.value}px !important;`;
+    }
+    if (rule.textColor.isEnabled !== false && rule.textColor.value) {
+      css += `color: ${rule.textColor.value} !important;`;
+    }
+    if (rule.fontWeight.isEnabled !== false && rule.fontWeight.value) {
+      css += `font-weight: ${rule.fontWeight.value} !important;`;
+    }
+    if (rule.fontStyle.isEnabled !== false && rule.fontStyle.value) {
+      css += `font-style: ${rule.fontStyle.value} !important;`;
+    }
+    if (
+      rule.textDecoration.isEnabled !== false &&
+      rule.textDecoration.value
+    ) {
+      css += `text-decoration: ${rule.textDecoration.value} !important;`;
+    }
+    return css;
+  };
+
   const applyStyles = (settings: any) => {
+    observer.disconnect(); // Prevent infinite loops
+
     const rules: StyleRule[] = settings.rules || [];
 
     // Load needed web fonts
     loadFonts(rules);
 
-    let styleTag = document.getElementById(
-      "site-magic-styles",
-    ) as HTMLStyleElement | null;
-    if (!styleTag) {
-      styleTag = document.createElement("style");
-      styleTag.id = "site-magic-styles";
-      (document.head || document.documentElement).appendChild(styleTag);
-    }
+    // To ensure only one instance exists, remove any previous style tags
+    const existingTags = document.querySelectorAll("#site-magic-styles");
+    existingTags.forEach(tag => tag.remove());
 
-
+    const styleTag = document.createElement("style");
+    styleTag.id = "site-magic-styles";
+    (document.head || document.documentElement).appendChild(styleTag);
 
     let consolidatedCss = "";
     rules.forEach((rule) => {
@@ -91,6 +120,7 @@ interface StyleRule {
 
       const target = rule.targetSelector || "";
       const isGlobal = !target;
+      const inheritedCss = buildInheritedCss(rule);
 
       // 1. Container Styles (Padding, Background, and Font/Color for the container itself)
       const containerSelector = isGlobal ? "html, body" : target;
@@ -108,71 +138,23 @@ interface StyleRule {
         containerCss += `border-radius: ${rule.borderRadius.value}${unit} !important;`;
       }
 
-      // Inherited properties (Applied to container as well)
-      if (
-        rule.fontFamily.isEnabled !== false &&
-        rule.fontFamily.value &&
-        rule.fontFamily.value !== "inherit"
-      ) {
-        containerCss += `font-family: ${rule.fontFamily.value} !important;`;
-      }
-      if (rule.fontSize.isEnabled !== false && rule.fontSize.value) {
-        containerCss += `font-size: ${rule.fontSize.value}px !important;`;
-      }
-      if (rule.textColor.isEnabled !== false && rule.textColor.value) {
-        containerCss += `color: ${rule.textColor.value} !important;`;
-      }
-      if (rule.fontWeight.isEnabled !== false && rule.fontWeight.value) {
-        containerCss += `font-weight: ${rule.fontWeight.value} !important;`;
-      }
-      if (rule.fontStyle.isEnabled !== false && rule.fontStyle.value) {
-        containerCss += `font-style: ${rule.fontStyle.value} !important;`;
-      }
-      if (
-        rule.textDecoration.isEnabled !== false &&
-        rule.textDecoration.value
-      ) {
-        containerCss += `text-decoration: ${rule.textDecoration.value} !important;`;
-      }
+      // Inherited properties
+      containerCss += inheritedCss;
       containerCss += "}\n";
       consolidatedCss += containerCss;
 
       // 2. Child Styles (Font, Color, etc. - Inherited stuff ONLY)
-      const childSelector = isGlobal
-        ? "p, span, div, h1, h2, h3, h4, h5, h6, a, li, td, th"
-        : `${target} *`;
-
-      let childCss = `${childSelector} {`;
-      if (
-        rule.fontFamily.isEnabled !== false &&
-        rule.fontFamily.value &&
-        rule.fontFamily.value !== "inherit"
-      ) {
-        childCss += `font-family: ${rule.fontFamily.value} !important;`;
+      if (inheritedCss) {
+        const childSelector = isGlobal
+          ? "p, span, div, h1, h2, h3, h4, h5, h6, a, li, td, th"
+          : `${target} *`;
+        consolidatedCss += `${childSelector} { ${inheritedCss} }\n`;
       }
-      if (rule.fontSize.isEnabled !== false && rule.fontSize.value) {
-        childCss += `font-size: ${rule.fontSize.value}px !important;`;
-      }
-      if (rule.textColor.isEnabled !== false && rule.textColor.value) {
-        childCss += `color: ${rule.textColor.value} !important;`;
-      }
-      if (rule.fontWeight.isEnabled !== false && rule.fontWeight.value) {
-        childCss += `font-weight: ${rule.fontWeight.value} !important;`;
-      }
-      if (rule.fontStyle.isEnabled !== false && rule.fontStyle.value) {
-        childCss += `font-style: ${rule.fontStyle.value} !important;`;
-      }
-      if (
-        rule.textDecoration.isEnabled !== false &&
-        rule.textDecoration.value
-      ) {
-        childCss += `text-decoration: ${rule.textDecoration.value} !important;`;
-      }
-      childCss += "}\n";
-      consolidatedCss += childCss;
     });
 
     styleTag.textContent = consolidatedCss;
+
+    observer.observe(document.head, { childList: true }); // Reconnect
   };
 
   const getSettings = () => {
@@ -325,10 +307,11 @@ interface StyleRule {
   // Reinforce styles on DOM updates
   const observer = new MutationObserver(() => {
     const style = document.getElementById("site-magic-styles");
-    if (style && style.parentElement !== document.documentElement) {
-      (document.head || document.documentElement).appendChild(style);
+    // If the style tag is gone from the head, trigger a full re-apply.
+    if (!style) {
+        getSettings();
     }
   });
 
-  observer.observe(document.documentElement, { childList: true });
+  observer.observe(document.head, { childList: true });
 })();
