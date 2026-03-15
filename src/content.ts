@@ -161,18 +161,6 @@ interface StyleRule {
     chrome.storage.sync.get(
       [
         "rules",
-        "fontFamily",
-        "fontSize",
-        "textColor",
-        "isFontFamilyEnabled",
-        "isFontSizeEnabled",
-        "isTextColorEnabled",
-        "isBgColorEnabled",
-        "isPaddingEnabled",
-        "padding",
-        "borderRadius",
-        "borderRadiusUnit",
-        "targetSelector",
       ],
       (result) => {
         applyStyles(result);

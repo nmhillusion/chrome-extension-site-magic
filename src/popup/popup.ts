@@ -297,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Load
-  chrome.storage.sync.get(null, (result: any) => {
+  chrome.storage.sync.get(["rules", "activeRuleId"], (result: any) => {
     if (result.rules && result.rules.length > 0) {
       rules = result.rules;
       activeRuleId = result.activeRuleId || rules[0].id;
