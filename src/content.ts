@@ -83,55 +83,7 @@ interface StyleRule {
       (document.head || document.documentElement).appendChild(styleTag);
     }
 
-    if (rules.length === 0) {
-      // Fallback migration logic
-      const legacyRule: StyleRule = {
-        id: "legacy",
-        name: "Legacy Rule",
-        targetSelector: settings.targetSelector,
-        fontFamily: {
-          isEnabled: settings.isFontFamilyEnabled !== false,
-          value: settings.fontFamily || "inherit",
-        },
-        fontSize: {
-          isEnabled: settings.isFontSizeEnabled !== false,
-          value: settings.fontSize || "16",
-        },
-        textColor: {
-          isEnabled: settings.isTextColorEnabled !== false,
-          value: settings.textColor || "#333333",
-        },
-        bgColor: {
-          isEnabled: settings.isBgColorEnabled !== false,
-          value: settings.bgColor || "#ffffff",
-        },
-        padding: {
-          isEnabled: settings.isPaddingEnabled !== false,
-          value: settings.padding || "0",
-        },
-        borderRadius: {
-          isEnabled: settings.isBorderRadiusEnabled !== false,
-          value: settings.borderRadius || "0",
-          unit: settings.borderRadiusUnit || "px",
-        },
-        fontWeight: {
-          isEnabled: settings.isFontWeightEnabled !== false,
-          value: settings.fontWeight || "normal",
-        },
-        fontStyle: {
-          isEnabled: settings.isFontStyleEnabled !== false,
-          value: settings.fontStyle || "normal",
-        },
-        textDecoration: {
-          isEnabled: settings.isTextDecorationEnabled !== false,
-          value: settings.textDecoration || "none",
-        },
-        isActive: true,
-      };
-      if (legacyRule.targetSelector || legacyRule.textColor.value) {
-        rules.push(legacyRule);
-      }
-    }
+
 
     let consolidatedCss = "";
     rules.forEach((rule) => {

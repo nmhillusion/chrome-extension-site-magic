@@ -296,59 +296,11 @@ document.addEventListener("DOMContentLoaded", () => {
     renderRules();
   };
 
-  // Load and Migrate
+  // Load
   chrome.storage.sync.get(null, (result: any) => {
     if (result.rules && result.rules.length > 0) {
       rules = result.rules;
       activeRuleId = result.activeRuleId || rules[0].id;
-    } else {
-      // Migration from legacy single-rule
-      const legacyRule: StyleRule = {
-        id: generateId(),
-        name: "Primary Style",
-        targetSelector: result.targetSelector || "",
-        fontFamily: {
-          isEnabled: result.isFontFamilyEnabled !== false,
-          value: result.fontFamily || "inherit",
-        },
-        fontSize: {
-          isEnabled: result.isFontSizeEnabled !== false,
-          value: result.fontSize || "16",
-        },
-        textColor: {
-          isEnabled: result.isTextColorEnabled !== false,
-          value: result.textColor || "#333333",
-        },
-        bgColor: {
-          isEnabled: result.isBgColorEnabled !== false,
-          value: result.bgColor || "#ffffff",
-        },
-        padding: {
-          isEnabled: result.isPaddingEnabled !== false,
-          value: result.padding || "0",
-        },
-        borderRadius: {
-          isEnabled: result.isBorderRadiusEnabled !== false,
-          value: result.borderRadius || "0",
-          unit: result.borderRadiusUnit || "px",
-        },
-        fontWeight: {
-          isEnabled: result.isFontWeightEnabled !== false,
-          value: result.fontWeight || "normal",
-        },
-        fontStyle: {
-          isEnabled: result.isFontStyleEnabled !== false,
-          value: result.fontStyle || "normal",
-        },
-        textDecoration: {
-          isEnabled: result.isTextDecorationEnabled !== false,
-          value: result.textDecoration || "none",
-        },
-        isActive: true,
-      };
-      rules = [legacyRule];
-      activeRuleId = legacyRule.id;
-      saveToStorage(false);
     }
     if (activeRuleId) setActiveRule(activeRuleId);
   });
