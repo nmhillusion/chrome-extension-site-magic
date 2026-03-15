@@ -98,7 +98,7 @@ interface StyleRule {
     return css;
   };
 
-  const applyStyles = (settings: any) => {
+  const applyStyleRules = (settings: any) => {
     observer.disconnect(); // Prevent infinite loops
 
     const rules: StyleRule[] = settings.rules || [];
@@ -157,13 +157,13 @@ interface StyleRule {
     observer.observe(document.head, { childList: true }); // Reconnect
   };
 
-  const getSettings = () => {
+  const getAndApplyStyleRules = () => {
     chrome.storage.sync.get(
       [
         "rules",
       ],
       (result) => {
-        applyStyles(result);
+        applyStyleRules(result);
       },
     );
   };
@@ -280,9 +280,9 @@ interface StyleRule {
       sendResponse({ status: "success" });
     } else if (request.action === "reapplyStyles") {
       if (request.rules) {
-        applyStyles({ rules: request.rules });
+        applyStyleRules({ rules: request.rules });
       } else {
-        getSettings();
+        getAndApplyStyleRules();
       }
       sendResponse({ status: "success" });
     }
@@ -290,14 +290,14 @@ interface StyleRule {
   });
 
   // Load initial styles
-  getSettings();
+  getAndApplyStyleRules();
 
   // Reinforce styles on DOM updates
   const observer = new MutationObserver(() => {
     const style = document.getElementById("site-magic-styles");
     // If the style tag is gone from the head, trigger a full re-apply.
     if (!style) {
-        getSettings();
+        getAndApplyStyleRules();
     }
   });
 
