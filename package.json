@@ -26,5 +26,8 @@
     "pug": "^3.0.3",
     "sass": "^1.97.3",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "brace-expansion": "2.1.4"
   }
 }
