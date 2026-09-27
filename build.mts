@@ -29,6 +29,13 @@ const build = async () => {
     },
     typescript: {
       enabled: true,
+      config: {
+        // BullEngine serializes this into user.tsconfig.json for the tsc CLI, which expects the string form.
+        // @ts-ignore - CompilerOptions types moduleResolution as an enum in some TS versions.
+        moduleResolution: "bundler",
+        skipLibCheck: true,
+        types: ["chrome", "node"],
+      },
     },
     copyResource: {
       enabled: true,
