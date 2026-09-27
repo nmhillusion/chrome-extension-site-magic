@@ -1,6 +1,6 @@
-# SiteMagic Chrome Extension
+# Site Style Weaver Chrome Extension
 
-`site-magical` is a Chrome extension that allows users to customize the appearance of any website. It provides a side panel UI where users can create and manage multiple styling rules. These rules can be applied globally to an entire site or targeted to specific CSS selectors.
+`site-style-weaver` is a Chrome extension that allows users to customize the appearance of any website. It provides a side panel UI where users can create and manage multiple styling rules. These rules can be applied globally to an entire site or targeted to specific CSS selectors.
 
 ## Installation
 

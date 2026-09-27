@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "SiteMagic",
+  "name": "Site Style Weaver",
   "version": "1.0",
   "description": "Magically transform any website by customizing its colors, fonts, and overall appearance.",
   "permissions": ["storage", "activeTab", "scripting", "tabs", "sidePanel"],

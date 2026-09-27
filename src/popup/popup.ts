@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
               const msg = chrome.runtime.lastError.message || "";
               if (msg.includes("Could not establish connection")) {
                 console.warn(
-                  "Site Magic: Page not ready. Please reload the page to apply styles.",
+                  "Site Style Weaver: Page not ready. Please reload the page to apply styles.",
                 );
               }
             }
