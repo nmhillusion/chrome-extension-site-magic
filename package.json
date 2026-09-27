@@ -21,10 +21,10 @@
   "homepage": "https://github.com/nmhillusion/chrome-extension-site-magic#readme",
   "devDependencies": {
     "@nmhillusion/n2ngin-bull-engine": "^2024.3.4",
-    "@types/chrome": "^0.1.37",
+    "@types/chrome": "^0.3.0",
     "@types/node": "^25.3.5",
-    "pug": "^3.0.3",
-    "sass": "^1.97.3",
-    "typescript": "^5.9.3"
+    "pug": "^3.0.4",
+    "sass": "^1.105.0",
+    "typescript": "^7.0.2"
   }
 }
