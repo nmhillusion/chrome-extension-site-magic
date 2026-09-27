@@ -1,4 +1,3 @@
-/// <reference types="chrome" />
 interface StyleRule {
   id: string;
   name: string;
