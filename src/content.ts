@@ -1,3 +1,5 @@
+/// <reference types="chrome" />
+
 interface StyleRule {
   id: string;
   name: string;
@@ -162,7 +164,7 @@ interface StyleRule {
       [
         "rules",
       ],
-      (result) => {
+      (result: { [key: string]: any }) => {
         applyStyleRules(result);
       },
     );
