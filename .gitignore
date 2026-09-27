@@ -18,3 +18,4 @@ node_modules/
 dist/
 build/
 .env
+package-lock.json
