@@ -261,20 +261,73 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
+  const ensureFontOption = (value: string) => {
+    if (!fontFamilySelect || !value || value === "inherit") return;
+    const exists = Array.from(fontFamilySelect.options).some(
+      (o) => o.value === value,
+    );
+    if (!exists) {
+      const opt = document.createElement("option");
+      opt.value = value;
+      opt.textContent = `${value} (page)`;
+      fontFamilySelect.appendChild(opt);
+    }
+  };
+
+  const applyComputedStyles = (styles: any) => {
+    const rule = getActiveRule();
+    if (!rule || !styles) return;
+    if (styles.fontFamily) {
+      rule.fontFamily.value = styles.fontFamily;
+      ensureFontOption(styles.fontFamily);
+    }
+    if (styles.fontSize) rule.fontSize.value = styles.fontSize;
+    if (styles.textColor) rule.textColor.value = styles.textColor;
+    if (styles.bgColor) rule.bgColor.value = styles.bgColor;
+    if (styles.padding) rule.padding.value = styles.padding;
+    if (styles.borderRadius) {
+      rule.borderRadius.value = styles.borderRadius.value;
+      rule.borderRadius.unit = styles.borderRadius.unit;
+    }
+    if (styles.fontWeight) rule.fontWeight.value = styles.fontWeight;
+    if (styles.fontStyle) rule.fontStyle.value = styles.fontStyle;
+    if (styles.textDecoration) rule.textDecoration.value = styles.textDecoration;
+    // Keep isEnabled flags untouched: new rules stay disabled by default.
+    if (activeRuleId) setActiveRule(activeRuleId);
+    saveToStorage(false);
+  };
+
+  const fillFromPage = (selector: string) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tabId = tabs[0]?.id;
+      if (!tabId) return;
+      chrome.tabs.sendMessage(
+        tabId,
+        { action: "getComputedStyles", selector: selector || "" },
+        (resp) => {
+          if (chrome.runtime.lastError) return;
+          if (resp && resp.status === "success" && resp.styles) {
+            applyComputedStyles(resp.styles);
+          }
+        },
+      );
+    });
+  };
+
   const addRule = () => {
     const newRule: StyleRule = {
       id: generateId(),
       name: `Style Rule ${rules.length + 1}`,
       targetSelector: "",
-      fontFamily: { isEnabled: true, value: "inherit" },
-      fontSize: { isEnabled: true, value: "16" },
-      textColor: { isEnabled: true, value: "#333333" },
-      bgColor: { isEnabled: true, value: "#ffffff" },
-      padding: { isEnabled: true, value: "0" },
-      borderRadius: { isEnabled: true, value: "0", unit: "px" },
-      fontWeight: { isEnabled: true, value: "normal" },
-      fontStyle: { isEnabled: true, value: "normal" },
-      textDecoration: { isEnabled: true, value: "none" },
+      fontFamily: { isEnabled: false, value: "inherit" },
+      fontSize: { isEnabled: false, value: "16" },
+      textColor: { isEnabled: false, value: "#333333" },
+      bgColor: { isEnabled: false, value: "#ffffff" },
+      padding: { isEnabled: false, value: "0" },
+      borderRadius: { isEnabled: false, value: "0", unit: "px" },
+      fontWeight: { isEnabled: false, value: "normal" },
+      fontStyle: { isEnabled: false, value: "normal" },
+      textDecoration: { isEnabled: false, value: "none" },
       isActive: true,
     };
     rules.push(newRule);
@@ -523,12 +576,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (targetInput) {
+    let selectorFillTimer: any;
     targetInput.addEventListener("input", (e) => {
       const rule = getActiveRule();
       if (rule) {
         rule.targetSelector = (e.target as HTMLTextAreaElement).value;
         debouncedSave();
         renderRules();
+        clearTimeout(selectorFillTimer);
+        const selectorSnapshot = rule.targetSelector;
+        selectorFillTimer = setTimeout(() => {
+          fillFromPage(selectorSnapshot);
+        }, 800);
       }
     });
   }
@@ -571,6 +630,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (targetInput) targetInput.value = rule.targetSelector;
           saveToStorage();
           renderRules();
+          fillFromPage(rule.targetSelector);
         }
       }
     }

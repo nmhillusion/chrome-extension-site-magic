@@ -274,10 +274,81 @@ interface StyleRule {
     }
   };
 
+  const rgbToHex = (rgb: string): string | null => {
+    const m = rgb.match(/rgba?\(([^)]+)\)/);
+    if (!m) return null;
+    const parts = m[1].split(",").map((p) => p.trim());
+    if (parts.length >= 4 && parseFloat(parts[3]) === 0) return null;
+    const toHex = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+    const r = parseFloat(parts[0]);
+    const g = parseFloat(parts[1]);
+    const b = parseFloat(parts[2]);
+    if ([r, g, b].some((v) => Number.isNaN(v))) return null;
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
+
+  const parsePxValue = (cssVal: string): string | null => {
+    const m = cssVal.trim().match(/^(-?\d+(?:\.\d+)?)px$/);
+    return m ? String(Math.round(parseFloat(m[1]))) : null;
+  };
+
+  const parseRadius = (cssVal: string): { value: string; unit: string } | null => {
+    const m = cssVal.trim().match(/^(-?\d+(?:\.\d+)?)(px|%)$/);
+    if (!m) return null;
+    return { value: String(Math.round(parseFloat(m[1]))), unit: m[2] };
+  };
+
+  const getComputedStyleForSelector = (selector: string) => {
+    let el: Element | null = null;
+    if (selector && selector.trim()) {
+      try {
+        el = document.querySelector(selector);
+      } catch {
+        el = null;
+      }
+      if (!el) return { status: "not-found" as const };
+    } else {
+      el = document.body || document.documentElement;
+    }
+    if (!el) return { status: "not-found" as const };
+    const cs = getComputedStyle(el as HTMLElement);
+
+    const textHex = rgbToHex(cs.color);
+    const bgHex = rgbToHex(cs.backgroundColor);
+    const fontPx = parsePxValue(cs.fontSize);
+    const padPx = parsePxValue(cs.paddingTop);
+    const radius = parseRadius(cs.borderTopLeftRadius);
+
+    const weightNum = parseInt(cs.fontWeight, 10);
+    const fontWeight = !Number.isNaN(weightNum)
+      ? weightNum >= 600 ? "bold" : "normal"
+      : cs.fontWeight === "bold" ? "bold" : "normal";
+    const textDec = (cs.textDecorationLine || cs.textDecoration || "").includes("underline")
+      ? "underline"
+      : "none";
+
+    return {
+      status: "success" as const,
+      styles: {
+        fontFamily: cs.fontFamily || "inherit",
+        fontSize: fontPx,
+        textColor: textHex,
+        bgColor: bgHex,
+        padding: padPx,
+        borderRadius: radius,
+        fontWeight,
+        fontStyle: cs.fontStyle === "italic" ? "italic" : "normal",
+        textDecoration: textDec,
+      },
+    };
+  };
+
   chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     if (request.action === "startPicking") {
       startPicking();
       sendResponse({ status: "success" });
+    } else if (request.action === "getComputedStyles") {
+      sendResponse(getComputedStyleForSelector(request.selector || ""));
     } else if (request.action === "reapplyStyles") {
       if (request.rules) {
         applyStyleRules({ rules: request.rules });
