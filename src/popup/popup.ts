@@ -78,6 +78,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const targetInput = document.getElementById(
     "target-input",
   ) as HTMLTextAreaElement;
+  const selectorError = document.getElementById(
+    "selector-error",
+  ) as HTMLElement;
   const pickingStatus = document.getElementById(
     "picking-status",
   ) as HTMLElement;
@@ -117,19 +120,37 @@ document.addEventListener("DOMContentLoaded", () => {
   const getActiveRule = () => rules.find((r) => r.id === activeRuleId);
 
   const renderRules = () => {
-    if (rulesList) rulesList.innerHTML = "";
+    if (rulesList) rulesList.textContent = "";
     rules.forEach((rule) => {
       const card = document.createElement("div");
       card.className = `rule-card ${rule.id === activeRuleId ? "active" : ""}`;
-      card.innerHTML = `
-        <div class="rule-info">
-          <span class="rule-name">${rule.name || "Untitled Rule"}</span>
-          <span class="rule-selector-preview">${rule.targetSelector || "Global (All Elements)"}</span>
-        </div>
-        <div class="rule-actions">
-          <button class="delete-rule-btn" data-id="${rule.id}" title="Delete Rule">🗑️</button>
-        </div>
-      `;
+
+      const info = document.createElement("div");
+      info.className = "rule-info";
+
+      const nameEl = document.createElement("span");
+      nameEl.className = "rule-name";
+      nameEl.textContent = rule.name || "Untitled Rule";
+
+      const selectorEl = document.createElement("span");
+      selectorEl.className = "rule-selector-preview";
+      selectorEl.textContent = rule.targetSelector || "Global (All Elements)";
+
+      info.appendChild(nameEl);
+      info.appendChild(selectorEl);
+
+      const actions = document.createElement("div");
+      actions.className = "rule-actions";
+
+      const deleteBtnEl = document.createElement("button");
+      deleteBtnEl.className = "delete-rule-btn";
+      deleteBtnEl.dataset.id = rule.id;
+      deleteBtnEl.title = "Delete Rule";
+      deleteBtnEl.textContent = "🗑️";
+
+      actions.appendChild(deleteBtnEl);
+      card.appendChild(info);
+      card.appendChild(actions);
 
       card.addEventListener("click", (e) => {
         if ((e.target as HTMLElement).classList.contains("delete-rule-btn"))
@@ -229,6 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!rule.targetSelector) {
         targetInput.placeholder = "Global (All Elements)";
       }
+      clearSelectorError();
     }
 
     renderRules();
@@ -297,21 +319,58 @@ document.addEventListener("DOMContentLoaded", () => {
     saveToStorage(false);
   };
 
+  const MAX_SELECTOR_LENGTH = 500;
+  const isSelectorSafe = (selector: string) =>
+    selector.length <= MAX_SELECTOR_LENGTH &&
+    !/[{}]/.test(selector) &&
+    !/<\//.test(selector);
+
   const fillFromPage = (selector: string) => {
+    const value = selector || "";
+    if (!value.trim()) {
+      clearSelectorError();
+      return;
+    }
+    if (value.length > MAX_SELECTOR_LENGTH) {
+      showSelectorError("Selector is too long (max 500 characters).");
+      return;
+    }
+    if (!isSelectorSafe(value)) {
+      showSelectorError("Selectors can't contain {, } or HTML tags.");
+      return;
+    }
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tabId = tabs[0]?.id;
       if (!tabId) return;
       chrome.tabs.sendMessage(
         tabId,
-        { action: "getComputedStyles", selector: selector || "" },
+        { action: "getComputedStyles", selector: value },
         (resp) => {
           if (chrome.runtime.lastError) return;
-          if (resp && resp.status === "success" && resp.styles) {
+          if (!resp) return;
+          if (resp.status === "success" && resp.styles) {
+            clearSelectorError();
             applyComputedStyles(resp.styles);
+          } else if (resp.status === "invalid") {
+            showSelectorError("Invalid selector — check CSS syntax.");
+          } else if (resp.status === "not-found") {
+            showSelectorError("No element matches this selector on the page.");
+          } else if (resp.status === "unsafe") {
+            showSelectorError("Selectors can't contain {, } or HTML tags.");
           }
         },
       );
     });
+  };
+
+  const showSelectorError = (message: string) => {
+    if (selectorError) selectorError.textContent = message;
+    if (targetInput) targetInput.classList.add("invalid");
+  };
+
+  const clearSelectorError = () => {
+    if (selectorError) selectorError.textContent = "";
+    if (targetInput) targetInput.classList.remove("invalid");
   };
 
   const addRule = () => {
@@ -671,6 +730,7 @@ document.addEventListener("DOMContentLoaded", () => {
           targetInput.value = "";
           targetInput.placeholder = "Global (All Elements)";
         }
+        clearSelectorError();
         saveToStorage();
         renderRules();
       }

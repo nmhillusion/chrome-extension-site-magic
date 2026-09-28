@@ -119,6 +119,7 @@ interface StyleRule {
       if (!rule.isActive) return;
 
       const target = rule.targetSelector || "";
+      if (target && !isSelectorSafe(target)) return;
       const isGlobal = !target;
       const inheritedCss = buildInheritedCss(rule);
 
@@ -274,6 +275,12 @@ interface StyleRule {
     }
   };
 
+  const MAX_SELECTOR_LENGTH = 500;
+  const isSelectorSafe = (selector: string) =>
+    selector.length <= MAX_SELECTOR_LENGTH &&
+    !/[{}]/.test(selector) &&
+    !/<\//.test(selector);
+
   const rgbToHex = (rgb: string): string | null => {
     const m = rgb.match(/rgba?\(([^)]+)\)/);
     if (!m) return null;
@@ -301,10 +308,11 @@ interface StyleRule {
   const getComputedStyleForSelector = (selector: string) => {
     let el: Element | null = null;
     if (selector && selector.trim()) {
+      if (!isSelectorSafe(selector)) return { status: "unsafe" as const };
       try {
         el = document.querySelector(selector);
       } catch {
-        el = null;
+        return { status: "invalid" as const };
       }
       if (!el) return { status: "not-found" as const };
     } else {
