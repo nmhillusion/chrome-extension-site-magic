@@ -1,6 +1,7 @@
 interface StyleRule {
   id: string;
   name: string;
+  domain: string;
   targetSelector: string;
   fontFamily: { isEnabled: boolean; value: string };
   fontSize: { isEnabled: boolean; value: string };
@@ -92,6 +93,9 @@ document.addEventListener("DOMContentLoaded", () => {
   ) as HTMLInputElement;
 
   const rulesList = document.getElementById("rules-list") as HTMLElement;
+  const currentSiteEl = document.getElementById(
+    "current-site",
+  ) as HTMLElement;
   const addRuleBtn = document.getElementById(
     "add-rule-btn",
   ) as HTMLButtonElement;
@@ -102,6 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // State
   let rules: StyleRule[] = [];
   let activeRuleId: string | null = null;
+  let currentHostname: string | null = null;
 
   const updateGroupState = (checkbox: HTMLInputElement, groupId: string) => {
     const group = document.getElementById(groupId);
@@ -119,24 +124,68 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const getActiveRule = () => rules.find((r) => r.id === activeRuleId);
 
+  const getPageHostname = (cb: (hostname: string | null) => void) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tabId = tabs[0]?.id;
+      if (!tabId) {
+        cb(null);
+        return;
+      }
+      chrome.tabs.sendMessage(tabId, { action: "getPageInfo" }, (resp) => {
+        if (chrome.runtime.lastError || !resp) {
+          cb(null);
+          return;
+        }
+        cb(resp.hostname || null);
+      });
+    });
+  };
+
+  const updateSiteIndicator = () => {
+    if (currentSiteEl) {
+      currentSiteEl.textContent = currentHostname || "All sites";
+    }
+  };
+
+  const refreshSiteContext = () => {
+    getPageHostname((hostname) => {
+      currentHostname = hostname;
+      updateSiteIndicator();
+      renderRules();
+    });
+  };
+
   const renderRules = () => {
     if (rulesList) rulesList.textContent = "";
-    rules.forEach((rule) => {
+    const visibleRules = currentHostname
+      ? rules.filter((r) => !r.domain || r.domain === currentHostname)
+      : rules.slice();
+    visibleRules.forEach((rule) => {
       const card = document.createElement("div");
       card.className = `rule-card ${rule.id === activeRuleId ? "active" : ""}`;
 
       const info = document.createElement("div");
       info.className = "rule-info";
 
+      const nameRow = document.createElement("div");
+      nameRow.className = "rule-name-row";
+
       const nameEl = document.createElement("span");
       nameEl.className = "rule-name";
       nameEl.textContent = rule.name || "Untitled Rule";
+
+      const siteEl = document.createElement("span");
+      siteEl.className = "rule-site";
+      siteEl.textContent = rule.domain || "Global";
+
+      nameRow.appendChild(nameEl);
+      nameRow.appendChild(siteEl);
 
       const selectorEl = document.createElement("span");
       selectorEl.className = "rule-selector-preview";
       selectorEl.textContent = rule.targetSelector || "Global (All Elements)";
 
-      info.appendChild(nameEl);
+      info.appendChild(nameRow);
       info.appendChild(selectorEl);
 
       const actions = document.createElement("div");
@@ -374,10 +423,12 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const addRule = () => {
-    const newRule: StyleRule = {
-      id: generateId(),
-      name: `Style Rule ${rules.length + 1}`,
-      targetSelector: "",
+    getPageHostname((hostname) => {
+      const newRule: StyleRule = {
+        id: generateId(),
+        name: `Style Rule ${rules.length + 1}`,
+        domain: hostname || "",
+        targetSelector: "",
       fontFamily: { isEnabled: false, value: "inherit" },
       fontSize: { isEnabled: false, value: "16" },
       textColor: { isEnabled: false, value: "#333333" },
@@ -388,10 +439,11 @@ document.addEventListener("DOMContentLoaded", () => {
       fontStyle: { isEnabled: false, value: "normal" },
       textDecoration: { isEnabled: false, value: "none" },
       isActive: true,
-    };
-    rules.push(newRule);
-    setActiveRule(newRule.id);
-    saveToStorage(true);
+      };
+      rules.push(newRule);
+      setActiveRule(newRule.id);
+      saveToStorage(true);
+    });
   };
 
   const deleteRule = (id: string) => {
@@ -415,6 +467,12 @@ document.addEventListener("DOMContentLoaded", () => {
       activeRuleId = result.activeRuleId || rules[0].id;
     }
     if (activeRuleId) setActiveRule(activeRuleId);
+    refreshSiteContext();
+  });
+
+  chrome.tabs.onActivated.addListener(() => refreshSiteContext());
+  chrome.tabs.onUpdated.addListener((_tabId, changeInfo) => {
+    if (changeInfo.status === "complete") refreshSiteContext();
   });
 
   // UI Listeners

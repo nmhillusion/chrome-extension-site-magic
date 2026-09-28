@@ -1,6 +1,7 @@
 interface StyleRule {
   id: string;
   name: string;
+  domain: string;
   targetSelector: string;
   fontFamily: { isEnabled: boolean; value: string };
   fontSize: { isEnabled: boolean; value: string };
@@ -30,7 +31,9 @@ interface StyleRule {
 
   const loadFonts = (rules: StyleRule[]) => {
     const fontsToLoad = new Set<string>();
+    const hostname = window.location.hostname;
     rules.forEach((rule) => {
+      if (rule.domain && rule.domain !== hostname) return;
       if (
         rule.isActive &&
         rule.fontFamily.isEnabled !== false &&
@@ -115,8 +118,10 @@ interface StyleRule {
     (document.head || document.documentElement).appendChild(styleTag);
 
     let consolidatedCss = "";
+    const hostname = window.location.hostname;
     rules.forEach((rule) => {
       if (!rule.isActive) return;
+      if (rule.domain && rule.domain !== hostname) return;
 
       const target = rule.targetSelector || "";
       if (target && !isSelectorSafe(target)) return;
@@ -357,6 +362,8 @@ interface StyleRule {
       sendResponse({ status: "success" });
     } else if (request.action === "getComputedStyles") {
       sendResponse(getComputedStyleForSelector(request.selector || ""));
+    } else if (request.action === "getPageInfo") {
+      sendResponse({ status: "success", hostname: window.location.hostname || null });
     } else if (request.action === "reapplyStyles") {
       if (request.rules) {
         applyStyleRules({ rules: request.rules });
