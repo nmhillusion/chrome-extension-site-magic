@@ -151,6 +151,26 @@ document.addEventListener("DOMContentLoaded", () => {
     getPageHostname((hostname) => {
       currentHostname = hostname;
       updateSiteIndicator();
+      const activeRule = getActiveRule();
+      const isActiveVisible =
+        !activeRule ||
+        !currentHostname ||
+        !activeRule.domain ||
+        activeRule.domain === currentHostname;
+      if (!isActiveVisible) {
+        const visibleRules = currentHostname
+          ? rules.filter((r) => !r.domain || r.domain === currentHostname)
+          : rules.slice();
+        if (visibleRules.length > 0) {
+          setActiveRule(visibleRules[0].id);
+          saveToStorage(false);
+        } else if (targetInput) {
+          targetInput.value = "";
+          targetInput.placeholder = "Global (All Elements)";
+        }
+        clearSelectorError();
+        if (pickingStatus) pickingStatus.textContent = "";
+      }
       renderRules();
     });
   };
